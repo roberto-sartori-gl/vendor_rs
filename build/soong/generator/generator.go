@@ -31,7 +31,7 @@ import (
 func init() {
 	android.RegisterModuleType("lineage_generator", GeneratorFactory)
 
-	pctx.HostBinToolVariable("sboxCmd", "sbox")
+	pctx.HostBinToolVariable("sboxCmd", "sbox_lineage")
 }
 
 var String = proptools.String
