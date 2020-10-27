@@ -33,6 +33,12 @@ import android.hardware.display.DisplayManager;
 import android.view.Display;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.File;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.FileNotFoundException;
 
 public class KeyHandler extends AccessibilityService {
     private static final String TAG = "KeyHandler";
@@ -48,6 +54,8 @@ public class KeyHandler extends AccessibilityService {
     private static final int msSilentVibrationLenght = 300;
     private static final int msVibrateVibrationLenght = 200;
 
+    private static final String TriStatePath = "/sys/devices/virtual/switch/tri-state-key/state";
+
     private boolean wasScreenOff = true;
     private long msPreviousEventMaxDistance = 1000;
 
@@ -58,6 +66,25 @@ public class KeyHandler extends AccessibilityService {
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
 
+    public static String readFromFile(Context contect, String path) {
+        String aBuffer = "";
+        try {
+                File myFile = new File(path);
+                FileInputStream fIn = new FileInputStream(myFile);
+                BufferedReader myReader = new BufferedReader(new InputStreamReader(fIn));
+                String aDataRow = "";
+                while ((aDataRow = myReader.readLine()) != null) {
+                        aBuffer += aDataRow;
+                }
+                myReader.close();
+        } catch (FileNotFoundException e) {
+                e.printStackTrace();
+        } catch (IOException e) {
+                e.printStackTrace();
+        }
+        return aBuffer;
+    }
+
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
@@ -65,6 +92,27 @@ public class KeyHandler extends AccessibilityService {
         mContext = this;
         mAudioManager = mContext.getSystemService(AudioManager.class);
         mVibrator = mContext.getSystemService(Vibrator.class);
+
+        // Set the status at boot following the slider position
+        // Do this in case the user changes the slider position while the phone is off, for example
+        // Also, we solve an issue regarding the STREAM_MUSIC that was never mute at boot
+        int tristate = Integer.parseInt(readFromFile(mContext, TriStatePath));
+        if (DEBUG) Log.d(TAG, "Tri Key state: " + tristate);
+        if (tristate == 1) {
+                // Silent mode
+                mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
+                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
+        }
+        else if (tristate == 2) {
+                // Vibration mode
+                mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
+        }
+        else if (tristate == 3) {
+                // Normal mode
+                mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
+        }
     }
 
     @Override
