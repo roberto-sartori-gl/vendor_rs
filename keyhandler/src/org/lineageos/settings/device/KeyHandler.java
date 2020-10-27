@@ -108,9 +108,11 @@ public class KeyHandler extends AccessibilityService {
 			manager.lockNow();
 			previousEventTime = System.currentTimeMillis();
 		}
-		if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL)
+		if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL) {
+                        mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
                         mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
-                return true;
+		}
+		return true;
             case MODE_VIBRATION:
 		if (!isScreenOn()) {
                         previousEventTime = System.currentTimeMillis();
@@ -123,6 +125,7 @@ public class KeyHandler extends AccessibilityService {
 			previousEventTime = System.currentTimeMillis();
 		}
 		if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE) {
+	                mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
 	                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
 			doHapticFeedback(msVibrateVibrationLenght);
 		}
@@ -139,6 +142,7 @@ public class KeyHandler extends AccessibilityService {
 			previousEventTime = System.currentTimeMillis();
 		}
 		if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT) {
+	                mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
 	                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
 			doHapticFeedback(msSilentVibrationLenght);
 		}
