@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import android.os.Handler;
 
 public class KeyHandler extends AccessibilityService {
     private static final String TAG = "KeyHandler";
@@ -49,6 +50,8 @@ public class KeyHandler extends AccessibilityService {
     private static final int MODE_NORMAL = 603;
     private static final int MODE_VIBRATION = 602;
     private static final int MODE_SILENCE = 601;
+    private static final int KEYCODE_APP_SELECT = 580;
+    private static final int KEYCODE_BACK = 158;
 
     // Vibration duration in ms
     private static final int msSilentVibrationLenght = 300;
@@ -85,6 +88,32 @@ public class KeyHandler extends AccessibilityService {
         return aBuffer;
     }
 
+    private static void setProp(String property, String value) {
+        Process sh = null;
+        String[] cmd = {"setprop", property, value};
+        try {
+             sh = Runtime.getRuntime().exec(cmd);
+        } catch (IOException e) {
+             e.printStackTrace();
+        }
+        try {
+            sh.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case Intent.ACTION_SCREEN_OFF:
+                    setProp("sys.button_backlight.on", "false");
+                    break;
+            }
+        }
+    };
+
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
@@ -92,6 +121,12 @@ public class KeyHandler extends AccessibilityService {
         mContext = this;
         mAudioManager = mContext.getSystemService(AudioManager.class);
         mVibrator = mContext.getSystemService(Vibrator.class);
+
+        // Register here to get the SCREEN_OFF event
+        // Used to turn off the capacitive buttons backlight
+        IntentFilter screenOffFilter = new IntentFilter();
+        screenOffFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mScreenStateReceiver, screenOffFilter);
 
         // Set the status at boot following the slider position
         // Do this in case the user changes the slider position while the phone is off, for example
@@ -195,6 +230,18 @@ public class KeyHandler extends AccessibilityService {
 			doHapticFeedback(msSilentVibrationLenght);
 		}
                 return true;
+            case KEYCODE_BACK:
+            case KEYCODE_APP_SELECT:
+                if (event.getAction() == 0) setProp("sys.button_backlight.on", "true");//)writeToFile(ButtonBacklightPath, "255");
+                else {
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        public void run() {
+                               setProp("sys.button_backlight.on", "false");
+                        }
+                    }, 1500);
+                }
+                return false;
             default:
                 return false;
         }
@@ -206,4 +253,11 @@ public class KeyHandler extends AccessibilityService {
                     VibrationEffect.DEFAULT_AMPLITUDE));
         }
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mScreenStateReceiver);
+    }
+
 }
