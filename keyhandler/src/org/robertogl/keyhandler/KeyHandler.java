@@ -66,7 +66,7 @@ public class KeyHandler extends AccessibilityService {
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
 
-    public static String readFromFile(Context contect, String path) {
+    private static String readFromFile(String path) {
         String aBuffer = "";
         try {
                 File myFile = new File(path);
@@ -96,7 +96,7 @@ public class KeyHandler extends AccessibilityService {
         // Set the status at boot following the slider position
         // Do this in case the user changes the slider position while the phone is off, for example
         // Also, we solve an issue regarding the STREAM_MUSIC that was never mute at boot
-        int tristate = Integer.parseInt(readFromFile(mContext, TriStatePath));
+        int tristate = Integer.parseInt(readFromFile(TriStatePath));
         if (DEBUG) Log.d(TAG, "Tri Key state: " + tristate);
         if (tristate == 1) {
                 // Silent mode
