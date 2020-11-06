@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *	http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,13 +34,13 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 
     public boolean isAccessServiceEnabled(Context context, String accessibilityServiceClass)
     {
-        String prefString = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-        return prefString!= null && prefString.contains(context.getPackageName() + "/" + accessibilityServiceClass);
+	String prefString = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+	return prefString!= null && prefString.contains(context.getPackageName() + "/" + accessibilityServiceClass);
     }
 
     @Override
     public void onReceive(final Context context, Intent intent) {
-        Log.d(TAG, "Starting");
+	Log.d(TAG, "Starting");
 	SharedPreferences pref = context.getSharedPreferences("KeyHandlerPref", MODE_PRIVATE);
 	Editor editor = pref.edit();
 
@@ -51,9 +51,9 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 		editor.putBoolean("isThisFirstBoot", false);
 		editor.commit();
 		Settings.Secure.putString(context.getContentResolver(),
-    			Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "org.robertogl.keyhandler/org.robertogl.keyhandler.KeyHandler");
+			Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "org.robertogl.keyhandler/org.robertogl.keyhandler.KeyHandler");
 		Settings.Secure.putString(context.getContentResolver(),
-    			Settings.Secure.ACCESSIBILITY_ENABLED, "1");
+			Settings.Secure.ACCESSIBILITY_ENABLED, "1");
 	}
 
 	if (isAccessServiceEnabled(context,"org.robertogl.keyhandler.KeyHandler")) {
