@@ -28,7 +28,6 @@ import android.os.IBinder;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.view.accessibility.AccessibilityEvent;
-import android.app.admin.DevicePolicyManager;
 import android.hardware.display.DisplayManager;
 import android.view.Display;
 import android.content.BroadcastReceiver;
@@ -40,6 +39,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import android.os.Handler;
+import android.os.PowerManager;
+import android.os.SystemClock;
 
 public class KeyHandler extends AccessibilityService {
     private static final String TAG = "KeyHandler";
@@ -174,7 +175,7 @@ public class KeyHandler extends AccessibilityService {
     }
 
     public boolean handleKeyEvent(KeyEvent event) {
-	DevicePolicyManager manager = ((DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE));
+	PowerManager manager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         int scanCode = event.getScanCode();
         if (DEBUG) Log.d(TAG, "key event detected: " + scanCode);
 	if (previousEventTime == 0) previousEventTime = System.currentTimeMillis() - msPreviousEventMaxDistance - 1;
@@ -188,7 +189,7 @@ public class KeyHandler extends AccessibilityService {
 		currentEventTime = System.currentTimeMillis();
 		if (currentEventTime - previousEventTime > msPreviousEventMaxDistance) wasScreenOff = false;
 		if (wasScreenOff) {
-			manager.lockNow();
+			manager.goToSleep(SystemClock.uptimeMillis());
 			previousEventTime = System.currentTimeMillis();
 		}
 		if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL) {
@@ -204,7 +205,7 @@ public class KeyHandler extends AccessibilityService {
 		currentEventTime = System.currentTimeMillis();
                 if (currentEventTime - previousEventTime > msPreviousEventMaxDistance) wasScreenOff = false;
 		if (wasScreenOff) {
-			manager.lockNow();
+			manager.goToSleep(SystemClock.uptimeMillis());
 			previousEventTime = System.currentTimeMillis();
 		}
 		if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE) {
@@ -221,7 +222,7 @@ public class KeyHandler extends AccessibilityService {
 		currentEventTime = System.currentTimeMillis();
                 if (currentEventTime - previousEventTime > msPreviousEventMaxDistance) wasScreenOff = false;
 		if (wasScreenOff) {
-			manager.lockNow();
+			manager.goToSleep(SystemClock.uptimeMillis());
 			previousEventTime = System.currentTimeMillis();
 		}
 		if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT) {
