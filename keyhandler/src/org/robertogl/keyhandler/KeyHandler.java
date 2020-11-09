@@ -66,6 +66,8 @@ public class KeyHandler extends AccessibilityService {
     private long currentEventTime = 0;
     private long previousEventTime = 0;
 
+    private static int clickToShutdown = 0;
+
     private Context mContext;
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
@@ -109,6 +111,7 @@ public class KeyHandler extends AccessibilityService {
 	public void onReceive(Context context, Intent intent) {
 	    switch (intent.getAction()) {
 		case Intent.ACTION_SCREEN_OFF:
+		    clickToShutdown = 0;
 		    setProp("sys.button_backlight.on", "false");
 		    break;
 	    }
@@ -233,12 +236,19 @@ public class KeyHandler extends AccessibilityService {
 		return true;
 	    case KEYCODE_BACK:
 	    case KEYCODE_APP_SELECT:
-		if (event.getAction() == 0) setProp("sys.button_backlight.on", "true");//)writeToFile(ButtonBacklightPath, "255");
+		if (event.getAction() == 0) {
+			clickToShutdown += 1;
+			setProp("sys.button_backlight.on", "true");
+		}
 		else {
 		    Handler handler = new Handler();
 		    handler.postDelayed(new Runnable() {
 			public void run() {
-			       setProp("sys.button_backlight.on", "false");
+				clickToShutdown -= 1;
+				if (clickToShutdown <= 0) {
+					clickToShutdown = 0;
+					setProp("sys.button_backlight.on", "false");
+				}
 			}
 		    }, 1500);
 		}
