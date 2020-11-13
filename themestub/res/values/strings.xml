@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">Stub Themes</string>
+	<string name="theme_overlay_font_default" translatable="false">default</string>
+	<string name="theme_overlay_color_default" translatable="false">default</string>
+</resources>
