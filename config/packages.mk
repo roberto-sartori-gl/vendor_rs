@@ -5,3 +5,8 @@ PRODUCT_PACKAGES += \
 # KeyHandler
 PRODUCT_PACKAGES += \
     KeyHandler
+
+# Theme picker
+PRODUCT_PACKAGES += \
+    ThemePicker \
+    ThemeStub
