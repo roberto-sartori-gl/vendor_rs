@@ -11,3 +11,8 @@ DEVICE_PACKAGE_OVERLAYS += vendor/rs/overlay
 # Tri-state-key layout
 PRODUCT_COPY_FILES += \
     vendor/rs/config/keylayout/tri-state-key.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/tri-state-key.kl
+
+# Styles & wallpapers
+PRODUCT_COPY_FILES += \
+    vendor/rs/config/permissions/privapp_whitelist_com.android.wallpaper.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/privapp_whitelist_com.android.wallpaper.xml \
+    vendor/rs/config/permissions/default_com.android.wallpaper.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/default-permissions/default_com.android.wallpaper.xml
