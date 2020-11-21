@@ -1,0 +1,6 @@
+# Define new type for the flicker free options
+type proc_flicker_free, fs_type, proc_type;
+
+# Allow system apps to access the flicker free options
+allow system_app proc_flicker_free:file { getattr open write };
+allow system_app proc_flicker_free:dir search;

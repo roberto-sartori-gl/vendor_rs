@@ -1,0 +1,1 @@
+genfscon proc /flicker_free u:object_r:proc_flicker_free:s0
