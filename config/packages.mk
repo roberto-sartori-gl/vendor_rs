@@ -2,9 +2,9 @@
 PRODUCT_PACKAGES += \
     libril-wrapper
 
-# KeyHandler
+# SettingsExtra
 PRODUCT_PACKAGES += \
-    KeyHandler
+    SettingsExtra
 
 # Theme picker
 PRODUCT_PACKAGES += \
