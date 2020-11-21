@@ -1,1 +1,3 @@
 allow system_app sysfs_switch:dir { search };
+allow system_app sysfs_graphics:dir search;
+allow system_app sysfs_livedisplay_tuneable:file { open write getattr };
