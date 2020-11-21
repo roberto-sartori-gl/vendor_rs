@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:key="general_preference_screen"
+	android:id="@+id/menu">
+
+	<androidx.preference.PreferenceCategory
+		android:key="main_menu"
+		android:title="Key Layout"
+		app:allowDividerAbove="false"
+		app:iconSpaceReserved="false"
+		app:allowDividerBelow="false">
+		<!--        android:textColor="@color/pressed_mega">  -->
+
+		<androidx.preference.SwitchPreferenceCompat
+			android:key="buttonSwap"
+			android:title="Swap back and recent capacitive buttons"
+			android:defaultValue="false"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+	</androidx.preference.PreferenceCategory>
+
+        <androidx.preference.PreferenceCategory
+                android:key="display_menu"
+                android:title="Display Options"
+                app:allowDividerAbove="false"
+                app:iconSpaceReserved="false"
+                app:allowDividerBelow="false">
+
+                <androidx.preference.SwitchPreferenceCompat
+                        android:key="flickerFree"
+			android:title="Enable DC Dimming (flicker free display)"
+                        android:defaultValue="false"
+                        app:allowDividerAbove="true"
+                        app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
+	<DropDownPreference
+			android:defaultValue="Normal"
+			android:entries="@array/displayMode"
+			android:entryValues="@array/displayModeValues"
+			android:key="display_mode"
+			android:summary="Select display color gamut"
+			android:title="Display color mode"
+			app:iconSpaceReserved="false"
+			app:useSimpleSummaryProvider="true" />
+
+	</androidx.preference.PreferenceCategory>
+
+
+</androidx.preference.PreferenceScreen>

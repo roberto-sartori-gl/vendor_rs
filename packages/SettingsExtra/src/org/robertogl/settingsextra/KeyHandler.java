@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.robertogl.keyhandler;
+package org.robertogl.settingsextra;
 
 import android.app.Service;
 import android.content.Context;
@@ -68,43 +68,11 @@ public class KeyHandler extends AccessibilityService {
 
     private static int clickToShutdown = 0;
 
+    private long doubleClickEventTime = 0;
+
     private Context mContext;
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
-
-    private static String readFromFile(String path) {
-	String aBuffer = "";
-	try {
-		File myFile = new File(path);
-		FileInputStream fIn = new FileInputStream(myFile);
-		BufferedReader myReader = new BufferedReader(new InputStreamReader(fIn));
-		String aDataRow = "";
-		while ((aDataRow = myReader.readLine()) != null) {
-			aBuffer += aDataRow;
-		}
-		myReader.close();
-	} catch (FileNotFoundException e) {
-		e.printStackTrace();
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
-	return aBuffer;
-    }
-
-    private static void setProp(String property, String value) {
-	Process sh = null;
-	String[] cmd = {"setprop", property, value};
-	try {
-	     sh = Runtime.getRuntime().exec(cmd);
-	} catch (IOException e) {
-	     e.printStackTrace();
-	}
-	try {
-	    sh.waitFor();
-	} catch (InterruptedException e) {
-	    e.printStackTrace();
-	}
-    }
 
     private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
 	@Override
@@ -112,7 +80,7 @@ public class KeyHandler extends AccessibilityService {
 	    switch (intent.getAction()) {
 		case Intent.ACTION_SCREEN_OFF:
 		    clickToShutdown = 0;
-		    setProp("sys.button_backlight.on", "false");
+		    Utils.setProp("sys.button_backlight.on", "false");
 		    break;
 	    }
 	}
@@ -135,7 +103,7 @@ public class KeyHandler extends AccessibilityService {
 	// Set the status at boot following the slider position
 	// Do this in case the user changes the slider position while the phone is off, for example
 	// Also, we solve an issue regarding the STREAM_MUSIC that was never mute at boot
-	int tristate = Integer.parseInt(readFromFile(TriStatePath));
+	int tristate = Integer.parseInt(Utils.readFromFile(TriStatePath));
 	if (DEBUG) Log.d(TAG, "Tri Key state: " + tristate);
 	if (tristate == 1) {
 		// Silent mode
@@ -164,28 +132,19 @@ public class KeyHandler extends AccessibilityService {
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
+	Log.d(TAG, "dozing");
 	return handleKeyEvent(event);
-    }
-
-    private boolean isScreenOn() {
-	DisplayManager dm = (DisplayManager) mContext.getSystemService(Context.DISPLAY_SERVICE);
-	for (Display display : dm.getDisplays()) {
-	    if (display.getState() != Display.STATE_OFF) {
-		return true;
-	    }
-	}
-	return false;
     }
 
     public boolean handleKeyEvent(KeyEvent event) {
 	PowerManager manager = (PowerManager) getSystemService(Context.POWER_SERVICE);
 	int scanCode = event.getScanCode();
-	if (DEBUG) Log.d(TAG, "key event detected: " + scanCode);
+	Log.d(TAG, "key event detected: " + scanCode);
 	if (previousEventTime == 0) previousEventTime = System.currentTimeMillis() - msPreviousEventMaxDistance - 1;
 	if (currentEventTime == 0) currentEventTime = System.currentTimeMillis();
 	switch (scanCode) {
 	    case MODE_NORMAL:
-		if (!isScreenOn()) {
+		if (!Utils.isScreenOn(mContext)) {
 			previousEventTime = System.currentTimeMillis();
 			wasScreenOff = true;
 		}
@@ -201,7 +160,7 @@ public class KeyHandler extends AccessibilityService {
 		}
 		return true;
 	    case MODE_VIBRATION:
-		if (!isScreenOn()) {
+		if (!Utils.isScreenOn(mContext)) {
 			previousEventTime = System.currentTimeMillis();
 			wasScreenOff = true;
 		}
@@ -214,11 +173,11 @@ public class KeyHandler extends AccessibilityService {
 		if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE) {
 			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
 			mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
-			doHapticFeedback(msVibrateVibrationLenght);
+			Utils.doHapticFeedback(mVibrator,msVibrateVibrationLenght);
 		}
 		return true;
 	    case MODE_SILENCE:
-		if (!isScreenOn()) {
+		if (!Utils.isScreenOn(mContext)) {
 			previousEventTime = System.currentTimeMillis();
 			wasScreenOff = true;
 		}
@@ -231,14 +190,14 @@ public class KeyHandler extends AccessibilityService {
 		if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT) {
 			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
 			mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
-			doHapticFeedback(msSilentVibrationLenght);
+			Utils.doHapticFeedback(mVibrator, msSilentVibrationLenght);
 		}
 		return true;
 	    case KEYCODE_BACK:
 	    case KEYCODE_APP_SELECT:
 		if (event.getAction() == 0) {
 			clickToShutdown += 1;
-			setProp("sys.button_backlight.on", "true");
+			Utils.setProp("sys.button_backlight.on", "true");
 		}
 		else {
 		    Handler handler = new Handler();
@@ -247,7 +206,7 @@ public class KeyHandler extends AccessibilityService {
 				clickToShutdown -= 1;
 				if (clickToShutdown <= 0) {
 					clickToShutdown = 0;
-					setProp("sys.button_backlight.on", "false");
+					Utils.setProp("sys.button_backlight.on", "false");
 				}
 			}
 		    }, 1500);
@@ -255,13 +214,6 @@ public class KeyHandler extends AccessibilityService {
 		return false;
 	    default:
 		return false;
-	}
-    }
-
-    private void doHapticFeedback(int msVibrationLenght) {
-	if (mVibrator != null && mVibrator.hasVibrator()) {
-	    mVibrator.vibrate(VibrationEffect.createOneShot(msVibrationLenght,
-		    VibrationEffect.DEFAULT_AMPLITUDE));
 	}
     }
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="displayMode">
+        <item>Normal</item>
+        <item>DCI-P3</item>
+        <item>sRGB</item>
+    </array>
+    <array name="displayModeValues">
+	<item>normal</item>
+	<item>dcip3</item>
+        <item>srgb</item>
+    </array>
+</resources>

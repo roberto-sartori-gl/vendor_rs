@@ -19,7 +19,14 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
-LOCAL_PACKAGE_NAME := KeyHandler
+
+LOCAL_STATIC_ANDROID_LIBRARIES := \
+    androidx.core_core \
+    androidx.appcompat_appcompat \
+    androidx.cardview_cardview \
+    androidx.preference_preference \
+
+LOCAL_PACKAGE_NAME := SettingsExtra
 
 LOCAL_CERTIFICATE := platform
 LOCAL_PRIVATE_PLATFORM_APIS := true
