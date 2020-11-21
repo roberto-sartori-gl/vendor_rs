@@ -19,4 +19,6 @@
 <resources>
     <!-- Default state of tap to wake -->
     <bool name="def_double_tap_to_wake">false</bool>
+    <!-- Default for Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS, 1==on -->
+    <integer name="def_lock_screen_show_notifications">0</integer>
 </resources>
