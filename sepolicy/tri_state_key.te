@@ -1,0 +1,5 @@
+# Define new type for the Tri State Key
+type sysfs_tri_state, fs_type, sysfs_type;
+
+# Allow system apps to access the Tri State Key state
+allow system_app sysfs_tri_state:file { getattr open read };
