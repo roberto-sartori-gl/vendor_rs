@@ -2,7 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
         android:sharedUserId="android.uid.system"
-        package="org.robertogl.settingsextra">
+        package="org.robertogl.settingsextra"
+        android:versionCode="1"
+        android:versionName="1.0" >
+
+        <uses-sdk
+		android:minSdkVersion="30"
+		android:targetSdkVersion="30"/>
+
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
@@ -10,8 +17,9 @@
 
 	<application
             android:label="SettingsExtra"
+            android:icon="@mipmap/ic_launcher"
             android:directBootAware="true"
-	    android:persistent="true">
+            android:persistent="true">
 
 	 <receiver android:name="org.robertogl.settingsextra.BootCompletedReceiver">
             <intent-filter>
