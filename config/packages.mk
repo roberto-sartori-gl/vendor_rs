@@ -10,3 +10,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     ThemePicker \
     ThemeStub
+
+PRODUCT_PACKAGES += \
+    messaging
