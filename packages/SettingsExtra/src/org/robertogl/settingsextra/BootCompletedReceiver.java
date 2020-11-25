@@ -19,6 +19,8 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 
     private boolean DEBUG = false;
 
+    private static final String AccessibilityService = ".MainService";
+
     public boolean isAccessServiceEnabled(Context context, String accessibilityServiceClass)
     {
 	String prefString = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
@@ -30,28 +32,22 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 	String package_name = context.getPackageName();
 	Context deviceProtectedContext = context.createDeviceProtectedStorageContext();
 	Log.d(TAG, "Starting");
-	SharedPreferences pref = deviceProtectedContext.getSharedPreferences("SettingsExtraPrivatePref", MODE_PRIVATE);
-	Editor editor = pref.edit();
 
-	isThisFirstBoot = pref.getBoolean("isThisFirstBoot", true);
+	// Always enable the MainService at boot: we need it
+	// It should be necessary only at first boot, but in case we change the AccessibilityService name
+	// or the user disable it, just enable it again after the boot
+	Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
+		Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, package_name + "/" + package_name + AccessibilityService);
+	Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
+		Settings.Secure.ACCESSIBILITY_ENABLED, "1");
 
-	if (isThisFirstBoot) {
-		Log.d(TAG, "Startingfirsttime");
-		editor.putBoolean("isThisFirstBoot", false);
-		editor.commit();
-		Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
-			Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, package_name + "/" + package_name + ".KeyHandler");
-		Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
-			Settings.Secure.ACCESSIBILITY_ENABLED, "1");
-	}
-
-	if (isAccessServiceEnabled(deviceProtectedContext, package_name + ".KeyHandler")) {
-		Log.d(TAG, "Key enabled");
+	if (isAccessServiceEnabled(deviceProtectedContext, package_name + AccessibilityService)) {
+		Log.d(TAG, AccessibilityService + " enabled");
 	}
 
 	// Start looking into preferences available to the user
-	pref = deviceProtectedContext.getSharedPreferences(package_name + "_preferences", MODE_PRIVATE);
-	editor = pref.edit();
+	SharedPreferences pref = deviceProtectedContext.getSharedPreferences(package_name + "_preferences", MODE_PRIVATE);
+	Editor editor = pref.edit();
 
 	// Check if the capacitive buttons are swapped
 	boolean areWeSwapping = pref.getBoolean("buttonSwap", false);

@@ -44,8 +44,8 @@ import android.os.SystemClock;
 import android.nfc.NfcAdapter;
 import android.content.ComponentName;
 
-public class KeyHandler extends AccessibilityService {
-    private static final String TAG = "KeyHandler";
+public class MainService extends AccessibilityService {
+    private static final String TAG = "MainService";
 
     private static final boolean DEBUG = false;
 

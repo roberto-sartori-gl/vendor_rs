@@ -29,7 +29,7 @@
         </receiver>
 
         <service
-	    android:name=".KeyHandler"
+	    android:name=".MainService"
 	    android:directBootAware="true"
             android:persistent="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
