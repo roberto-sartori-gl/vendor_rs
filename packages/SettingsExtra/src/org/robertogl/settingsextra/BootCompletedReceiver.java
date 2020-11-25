@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.util.Log;
 import android.provider.Settings;
 import android.content.ContentResolver;
+import android.content.ComponentName;
 
 public class BootCompletedReceiver extends BroadcastReceiver {
 
@@ -64,5 +65,8 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 	String displayMode = pref.getString("display_mode", "normal");
 	if (displayMode.equals("srgb")) Utils.writeToFile(Utils.displayModeSRGBNode, "1", deviceProtectedContext);
 	else if (displayMode.equals("dcip3")) Utils.writeToFile(Utils.displayModeDCIP3Node, "1", deviceProtectedContext);
+
+	// Update the NfcTile
+	NfcTile.requestListeningState(deviceProtectedContext, new ComponentName(deviceProtectedContext, NfcTile.class));
     }
 }

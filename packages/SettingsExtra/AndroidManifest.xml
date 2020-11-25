@@ -41,6 +41,21 @@
                 android:resource="@xml/accessibility_service" />
         </service>
 
+	<service
+            android:name=".NfcTile"
+            android:enabled="true"
+            android:label="NFC"
+            android:icon="@drawable/ic_qs_nfc"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action
+                    android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.ACTIVE_TILE"
+                android:value="true" />
+        </service>
+
         <activity
             android:name="org.robertogl.settingsextra.SettingsExtraActivity"
 		android:label="@string/settingsextra_display_title"
@@ -48,6 +63,16 @@
 	    <intent-filter>
 		 <action android:name="android.intent.action.MAIN" />
                  <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+	<activity
+	    android:name=".NfcPreference"
+	    android:label="NfcPreferenceStub"
+	    android:excludeFromRecents="true"
+	    android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES"/>
             </intent-filter>
         </activity>
 

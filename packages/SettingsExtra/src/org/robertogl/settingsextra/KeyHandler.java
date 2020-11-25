@@ -41,6 +41,8 @@ import java.io.FileNotFoundException;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.nfc.NfcAdapter;
+import android.content.ComponentName;
 
 public class KeyHandler extends AccessibilityService {
     private static final String TAG = "KeyHandler";
@@ -86,6 +88,26 @@ public class KeyHandler extends AccessibilityService {
 	}
     };
 
+    private final BroadcastReceiver NfcReceiver = new BroadcastReceiver() {
+        @Override
+         public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            if (action.equals(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(NfcAdapter.EXTRA_ADAPTER_STATE,
+                        NfcAdapter.STATE_OFF);
+                switch (state) {
+                    case NfcAdapter.STATE_OFF:
+                        NfcTile.requestListeningState(getApplicationContext(), new ComponentName(getApplicationContext(), NfcTile.class));
+                        break;
+                    case NfcAdapter.STATE_ON:
+                        NfcTile.requestListeningState(getApplicationContext(), new ComponentName(getApplicationContext(), NfcTile.class));
+                        break;
+                }
+            }
+        }
+    };
+
     @Override
     protected void onServiceConnected() {
 	super.onServiceConnected();
@@ -120,6 +142,10 @@ public class KeyHandler extends AccessibilityService {
 		mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
 		mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
 	}
+
+	// Listen for NFC events (ON/OFF)
+	IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
+	this.registerReceiver(NfcReceiver, filter);
     }
 
     @Override
