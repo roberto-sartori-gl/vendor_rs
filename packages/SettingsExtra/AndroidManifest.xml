@@ -10,6 +10,8 @@
 		android:minSdkVersion="30"
 		android:targetSdkVersion="30"/>
 
+	<protected-broadcast android:name="android.service.quicksettings.action.REQUEST_LISTENING" />
+
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 	<uses-permission android:name="android.permission.WRITE_SETTINGS" />

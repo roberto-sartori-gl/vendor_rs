@@ -8,10 +8,13 @@ import android.util.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.Thread;
 
 public class NfcTile extends TileService {
 
     private static String TAG = "NfcTile";
+
+    private static boolean DEBUG = false;
 
     @Override
     public void onCreate() {
@@ -36,9 +39,26 @@ public class NfcTile extends TileService {
     }
 
     private void updateTile(){
+        int i = 0;
+        int max = 30;
         Tile qsTile = getQsTile();
-        NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        NfcAdapter mNfcAdapter = null;
 
+        while (mNfcAdapter == null) {
+	    try {
+	        mNfcAdapter = NfcAdapter.getNfcAdapter(this);
+		break;
+	    } catch (UnsupportedOperationException e) {
+		i++;
+	    }
+	    if (DEBUG) Log.d(TAG, "Waiting for the NfcAdapter to be online...");
+	    try {
+		Thread.sleep(1000);
+	    } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+	    if (i > max) return;
+        }
         if (!mNfcAdapter.isEnabled()) {
             // NFC is disabled
             qsTile.setState(Tile.STATE_INACTIVE);
