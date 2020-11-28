@@ -55,10 +55,14 @@ public class MainService extends AccessibilityService {
     private static final int MODE_SILENCE = 601;
     private static final int KEYCODE_APP_SELECT = 580;
     private static final int KEYCODE_BACK = 158;
+    private static final int KEYCODE_F4 = 62;
 
     // Vibration duration in ms
     private static final int msSilentVibrationLenght = 300;
     private static final int msVibrateVibrationLenght = 200;
+
+    private static final int msDoubleClickThreshold = 250;
+    private long msDoubleClick = 0;
 
     private static final String TriStatePath = "/sys/devices/virtual/switch/tri-state-key/state";
 
@@ -81,8 +85,15 @@ public class MainService extends AccessibilityService {
 	public void onReceive(Context context, Intent intent) {
 	    switch (intent.getAction()) {
 		case Intent.ACTION_SCREEN_OFF:
+		    if (DEBUG) Log.d(TAG, "Screen OFF");
 		    clickToShutdown = 0;
+		    if (DEBUG) Log.d(TAG, "Always On Display is: " + Utils.isAlwaysOnDisplayEnabled(mContext));
+		    if (Utils.isAlwaysOnDisplayEnabled(mContext)) Utils.writeToFile(Utils.dozeWakeupNode, "1", mContext);
 		    Utils.setProp("sys.button_backlight.on", "false");
+		    break;
+		case Intent.ACTION_SCREEN_ON:
+		    if (DEBUG) Log.d(TAG, "Screen ON");
+		    if (Utils.isAlwaysOnDisplayEnabled(mContext)) Utils.writeToFile(Utils.dozeWakeupNode, "0", mContext);
 		    break;
 	    }
 	}
@@ -118,9 +129,10 @@ public class MainService extends AccessibilityService {
 
 	// Register here to get the SCREEN_OFF event
 	// Used to turn off the capacitive buttons backlight
-	IntentFilter screenOffFilter = new IntentFilter();
-	screenOffFilter.addAction(Intent.ACTION_SCREEN_OFF);
-	registerReceiver(mScreenStateReceiver, screenOffFilter);
+	IntentFilter screenActionFilter = new IntentFilter();
+	screenActionFilter.addAction(Intent.ACTION_SCREEN_OFF);
+	screenActionFilter.addAction(Intent.ACTION_SCREEN_ON);
+	registerReceiver(mScreenStateReceiver, screenActionFilter);
 
 	// Set the status at boot following the slider position
 	// Do this in case the user changes the slider position while the phone is off, for example
@@ -158,14 +170,13 @@ public class MainService extends AccessibilityService {
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
-	Log.d(TAG, "dozing");
 	return handleKeyEvent(event);
     }
 
     public boolean handleKeyEvent(KeyEvent event) {
 	PowerManager manager = (PowerManager) getSystemService(Context.POWER_SERVICE);
 	int scanCode = event.getScanCode();
-	Log.d(TAG, "key event detected: " + scanCode);
+	if (DEBUG) Log.d(TAG, "key event detected: " + scanCode);
 	if (previousEventTime == 0) previousEventTime = System.currentTimeMillis() - msPreviousEventMaxDistance - 1;
 	if (currentEventTime == 0) currentEventTime = System.currentTimeMillis();
 	switch (scanCode) {
@@ -238,15 +249,49 @@ public class MainService extends AccessibilityService {
 		    }, 1500);
 		}
 		return false;
+	    case KEYCODE_F4:
+		if (DEBUG) Log.d(TAG, "F4 detected");
+		if (Integer.parseInt(Utils.readFromFile(Utils.dozeWakeupNode)) == 0) {
+			    if (DEBUG) Log.d(TAG, "F4 ignored (not enabled)");
+			    return false;
+		} else if (event.getAction() == KeyEvent.ACTION_UP) {
+			    if (DEBUG) Log.d(TAG, "F4 UP detected");
+			    if (doubleClick()) {
+				PowerManager.WakeLock wakeLock;
+				wakeLock = manager.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+					PowerManager.ACQUIRE_CAUSES_WAKEUP |
+					PowerManager.ON_AFTER_RELEASE, "WakeLock");
+				wakeLock.acquire();
+				wakeLock.release();
+				wakeLock = null;
+				return true;
+			}
+		}
+		return true;
 	    default:
 		return false;
 	}
+    }
+
+    private boolean doubleClick() {
+        boolean result = false;
+        long thisTime = System.currentTimeMillis();
+
+        if ((thisTime - msDoubleClick) < msDoubleClickThreshold) {
+            if (DEBUG) Log.d(TAG, "doubleClick");
+            result = true;
+        }
+        else {
+            msDoubleClick = thisTime;
+        }
+        return result;
     }
 
     @Override
     public void onDestroy() {
 	super.onDestroy();
 	unregisterReceiver(mScreenStateReceiver);
+	unregisterReceiver(NfcReceiver);
     }
 
 }

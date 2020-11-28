@@ -25,9 +25,13 @@ import java.io.FileNotFoundException;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
-
+import android.provider.Settings;
 
 public final class Utils {
+
+   private static final String TAG = "SettingsExtraUtils";
+
+   private static final boolean DEBUG = false;
 
    protected static String keySwapNode = "/proc/s1302/key_rep";
 
@@ -36,6 +40,8 @@ public final class Utils {
    protected static String displayModeDCIP3Node = "/sys/devices/virtual/graphics/fb0/dci_p3";
 
    protected static String flickerFreeNode = "/proc/flicker_free/flicker_free";
+
+   protected static String dozeWakeupNode = "/proc/touchpanel/tp_f4";
 
    protected static String flickerFreeMinBrightness = "/proc/flicker_free/flicker_free";
 
@@ -81,6 +87,7 @@ public final class Utils {
     protected static boolean isScreenOn(Context mContext) {
         DisplayManager dm = (DisplayManager) mContext.getSystemService(Context.DISPLAY_SERVICE);
         for (Display display : dm.getDisplays()) {
+            if (DEBUG) Log.d(TAG, "Display state: " + display.getState());
             if (display.getState() != Display.STATE_OFF) {
                 return true;
             }
@@ -103,4 +110,8 @@ public final class Utils {
         }
     }
 
+    protected static boolean isAlwaysOnDisplayEnabled(Context context) {
+        return Settings.Secure.getInt(context.getContentResolver(),
+                "double_tap_to_wake", 0) != 0;
+    }
 }
