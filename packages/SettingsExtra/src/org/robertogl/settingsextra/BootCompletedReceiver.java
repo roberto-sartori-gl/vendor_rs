@@ -51,7 +51,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 
 	// Start looking into preferences available to the user
 	SharedPreferences pref = deviceProtectedContext.getSharedPreferences(package_name + "_preferences", MODE_PRIVATE);
-	Editor editor = pref.edit();
+	//Editor editor = pref.edit();
 
 	// Check if the capacitive buttons are swapped
 	boolean areWeSwapping = pref.getBoolean("buttonSwap", false);
@@ -75,5 +75,21 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 		}
 	};
 	mainHandler.post(myRunnable);
+
+	boolean areStatusBarIconHidden = pref.getBoolean("areStatusBarIconHidden", false);
+	if (!areStatusBarIconHidden) {
+		if (DEBUG) Log.d(TAG, "Hiding status bar icons");
+		pref.edit().putBoolean("areStatusBarIconHidden", true).commit();
+		// Hide unwanted icons on Status Bar
+		// This should happen only at first boot: SystemUI is not ready
+		// when we trigger this, so wait some seconds before removing the icons
+		Handler handler = new Handler();
+			handler.postDelayed(new Runnable() {
+				public void run() {
+					Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "rotate");
+					Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "bluetooth");
+				}
+		}, 10000);
+	}
     }
 }

@@ -114,4 +114,15 @@ public final class Utils {
         return Settings.Secure.getInt(context.getContentResolver(),
                 "double_tap_to_wake", 0) != 0;
     }
+
+    protected static void removeUnwantendStatusBarIcon(Context context, String unWantedIcon) {
+	String currentBlackList = "";
+	currentBlackList = Settings.Secure.getString(context.getContentResolver(), "icon_blacklist");
+	if (currentBlackList == null) {
+		Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", unWantedIcon);
+		return;
+	}
+	if (currentBlackList.contains(unWantedIcon)) return;
+	else Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", currentBlackList + "," + unWantedIcon);
+    }
 }

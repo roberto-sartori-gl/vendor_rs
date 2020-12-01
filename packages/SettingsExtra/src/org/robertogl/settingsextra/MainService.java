@@ -38,11 +38,17 @@ import java.io.File;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.util.*;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.nfc.NfcAdapter;
 import android.content.ComponentName;
+
+import android.app.StatusBarManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 
 public class MainService extends AccessibilityService {
     private static final String TAG = "MainService";
@@ -76,9 +82,101 @@ public class MainService extends AccessibilityService {
 
     private long doubleClickEventTime = 0;
 
+    private boolean isBluetoothOff = true;
+
+    private List<String> mBluetoothBatteryConnectedAddress = new ArrayList<String>();
+
+    private int bluetoothDeviceConnected = 0;
+
     private Context mContext;
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
+    private StatusBarManager mStatusBarManager;
+
+    private void updateBatteryLevel(int batteryLevel) {
+	if (DEBUG) Log.d(TAG, "bluetooth: updating icon on status bar with battery level: " + batteryLevel);
+	int iconId = 0;
+	mStatusBarManager = (StatusBarManager)getSystemService(STATUS_BAR_SERVICE);
+	if (batteryLevel == -1 || batteryLevel == -100) {
+	     iconId = R.drawable.stat_sys_data_bluetooth_connected;
+	} else if (batteryLevel == 100) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_9;
+        } else if (batteryLevel >= 90) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_8;
+        } else if (batteryLevel >= 80) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_7;
+        } else if (batteryLevel >= 70) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_6;
+        } else if (batteryLevel >= 60) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_5;
+        } else if (batteryLevel >= 50) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_4;
+        } else if (batteryLevel >= 40) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_3;
+        } else if (batteryLevel >= 30) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_2;
+        } else if (batteryLevel >= 20) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_1;
+        } else if (batteryLevel >= 10) {
+             iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_0;
+        }
+	mStatusBarManager.setIcon("bluetooth_extra", iconId, 0, null);
+    }
+
+    private final BroadcastReceiver mBluetoothReceiver = new BroadcastReceiver() {
+	@Override
+	public void onReceive(Context context, Intent intent) {
+	    String action = intent.getAction();
+	    mStatusBarManager = (StatusBarManager)getSystemService(STATUS_BAR_SERVICE);
+	    if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+		if (DEBUG) Log.d(TAG, "bluetooth in ACTION_STATE_CHANGED");
+		final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+		switch(state) {
+		    case BluetoothAdapter.STATE_OFF:
+		    case BluetoothAdapter.STATE_DISCONNECTED:
+			if (DEBUG) Log.d(TAG, "bluetooth in STATE_OFF/DISCONNECTED");
+			mBluetoothBatteryConnectedAddress.clear();
+			mStatusBarManager.removeIcon("bluetooth_extra");
+			isBluetoothOff = true;
+			bluetoothDeviceConnected = 0;
+			break;
+	        }
+	    } else if (action.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)) {
+		if (DEBUG) Log.d(TAG, "bluetooth in ACTION_ACL_DISCONNECTED");
+		BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+		if (mBluetoothBatteryConnectedAddress.contains(device.getAddress())) mBluetoothBatteryConnectedAddress.remove(device.getAddress());
+		bluetoothDeviceConnected -= 1;
+		if (bluetoothDeviceConnected == 0) {
+			if (DEBUG) Log.d(TAG, "bluetooth devices all disconnected");
+			mBluetoothBatteryConnectedAddress.clear();
+			mStatusBarManager.removeIcon("bluetooth_extra");
+			isBluetoothOff = true;
+		} else if (mBluetoothBatteryConnectedAddress.size() > 0) {
+			if (DEBUG) Log.d(TAG, "bluetooth devices with battery are still connected");
+			isBluetoothOff = false;
+		} else if (bluetoothDeviceConnected > 0) {
+			if (DEBUG) Log.d(TAG, "bluetooth devices without battery are still connected");
+			mBluetoothBatteryConnectedAddress.clear();
+			updateBatteryLevel(BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+			isBluetoothOff = true;
+		}
+	    } else if (action.equals(BluetoothDevice.ACTION_ACL_CONNECTED)) {
+		if (DEBUG) Log.d(TAG, "bluetooth in ACTION_ACL_CONNECTED");
+		if (!(mBluetoothBatteryConnectedAddress.size() > 0)) updateBatteryLevel(BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+		bluetoothDeviceConnected += 1;
+		isBluetoothOff = false;
+	    } else if (action.equals(BluetoothDevice.ACTION_BATTERY_LEVEL_CHANGED)) {
+		int batteryLevel = intent.getIntExtra(BluetoothDevice.EXTRA_BATTERY_LEVEL, BluetoothDevice.BATTERY_LEVEL_BLUETOOTH_OFF);
+		if (!isBluetoothOff) updateBatteryLevel(batteryLevel);
+		if (batteryLevel >= 0) {
+		        if (DEBUG) Log.d(TAG, "bluetooth device has battery");
+			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+			if (!mBluetoothBatteryConnectedAddress.contains(device.getAddress())) mBluetoothBatteryConnectedAddress.add(device.getAddress());
+		}
+		if (DEBUG) Log.d(TAG, "bluetooth battery change detected: " + batteryLevel);
+	    }
+	}
+    };
 
     private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
 	@Override
@@ -158,6 +256,15 @@ public class MainService extends AccessibilityService {
 	// Listen for NFC events (ON/OFF)
 	IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
 	this.registerReceiver(NfcReceiver, filter);
+
+	// Listen for Bluetooth events (ON/OFF/CONNECTED/DISCONNECTED/bluetooth battery level changes)
+	IntentFilter mBluetoothFilter = new IntentFilter();
+	mBluetoothFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+	mBluetoothFilter.addAction(BluetoothDevice.ACTION_BATTERY_LEVEL_CHANGED);
+	mBluetoothFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+	mBluetoothFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+	this.registerReceiver(mBluetoothReceiver, mBluetoothFilter);
+
     }
 
     @Override
@@ -292,6 +399,7 @@ public class MainService extends AccessibilityService {
 	super.onDestroy();
 	unregisterReceiver(mScreenStateReceiver);
 	unregisterReceiver(NfcReceiver);
+	unregisterReceiver(mBluetoothReceiver);
     }
 
 }
