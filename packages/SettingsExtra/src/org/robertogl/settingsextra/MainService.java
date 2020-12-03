@@ -39,16 +39,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.text.SimpleDateFormat;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.nfc.NfcAdapter;
 import android.content.ComponentName;
+import static android.content.Context.MODE_PRIVATE;
+import android.content.SharedPreferences;
 
 import android.app.StatusBarManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+
+import android.telephony.TelephonyManager;
+import android.media.MediaRecorder;
+
+import android.os.Environment;
+import android.widget.Toast;
 
 public class MainService extends AccessibilityService {
     private static final String TAG = "MainService";
@@ -88,10 +97,15 @@ public class MainService extends AccessibilityService {
 
     private int bluetoothDeviceConnected = 0;
 
+    private String callNumber;
+
+    private boolean areWeRecordingACall = false;
+
     private Context mContext;
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
     private StatusBarManager mStatusBarManager;
+    private MediaRecorder mCallRecorder;
 
     private void updateBatteryLevel(int batteryLevel) {
 	if (DEBUG) Log.d(TAG, "bluetooth: updating icon on status bar with battery level: " + batteryLevel);
@@ -217,6 +231,48 @@ public class MainService extends AccessibilityService {
         }
     };
 
+    BroadcastReceiver CallRecorderReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
+            SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+            if (!pref.getBoolean("areWeAllowedToRecordCall", false) && !areWeRecordingACall) return;
+
+            String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+
+            if (TelephonyManager.EXTRA_STATE_OFFHOOK.equals(state))
+            {
+                if (DEBUG) Log.d(TAG, "Call in progress");
+                startRecording();
+            }
+
+            if (TelephonyManager.EXTRA_STATE_IDLE.equals(state) && areWeRecordingACall == true)
+            {
+                if (DEBUG) Log.d(TAG, "Call finished");
+                stopRecording();
+            }
+
+            if (TelephonyManager.EXTRA_STATE_RINGING.equals(state))
+            {
+                if (DEBUG) Log.d(TAG, "Call ringing");
+                callNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
+            }
+        };
+    };
+
+    BroadcastReceiver OutGoingNumDetector = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+	    Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
+	    SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+	    if (!pref.getBoolean("areWeAllowedToRecordCall", false) && !areWeRecordingACall) return;
+
+	    if (DEBUG) Log.d(TAG, "Outgoing call starting");
+	    callNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
+        }
+    };
+
     @Override
     protected void onServiceConnected() {
 	super.onServiceConnected();
@@ -265,6 +321,13 @@ public class MainService extends AccessibilityService {
 	mBluetoothFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
 	this.registerReceiver(mBluetoothReceiver, mBluetoothFilter);
 
+	// Listen for incoming or outgoing call
+	IntentFilter mRecordingFilter = new IntentFilter();
+	mRecordingFilter.addAction("android.intent.action.PHONE_STATE");
+	this.registerReceiver(CallRecorderReceiver, mRecordingFilter);
+	IntentFilter OutGoingNumFilter = new IntentFilter();
+	OutGoingNumFilter.addAction("android.intent.action.NEW_OUTGOING_CALL");
+	this.registerReceiver(OutGoingNumDetector, OutGoingNumFilter);
     }
 
     @Override
@@ -394,12 +457,57 @@ public class MainService extends AccessibilityService {
         return result;
     }
 
+    public void startRecording() {
+        if(!areWeRecordingACall) {
+            Toast.makeText(this, "This call is being recorded", Toast.LENGTH_LONG).show();
+            if (DEBUG) Log.d(TAG, "Starting MediaRecorder");
+            mCallRecorder = new MediaRecorder();
+            mCallRecorder.setAudioSource(MediaRecorder.AudioSource.VOICE_CALL);
+            mCallRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mCallRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+            String file = Environment.getExternalStorageDirectory().toString();
+            String filepath = file + "/CallRecording";
+            File dir = new File(filepath);
+            dir.mkdirs();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
+            String currentDateandTime = sdf.format(new Date());
+
+            filepath += "/" + currentDateandTime + "_" + callNumber + ".3gp";
+            mCallRecorder.setOutputFile(filepath);
+
+            try {
+                mCallRecorder.prepare();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mCallRecorder.start();
+            areWeRecordingACall = true;
+        }
+    }
+
+    public void stopRecording() {
+        if (areWeRecordingACall)
+        {
+            mCallRecorder.stop();
+            mCallRecorder.reset();
+            mCallRecorder.release();
+            mCallRecorder = null;
+            areWeRecordingACall = false;
+        }
+    }
+
     @Override
     public void onDestroy() {
 	super.onDestroy();
 	unregisterReceiver(mScreenStateReceiver);
 	unregisterReceiver(NfcReceiver);
 	unregisterReceiver(mBluetoothReceiver);
+	unregisterReceiver(CallRecorderReceiver);
+	unregisterReceiver(OutGoingNumDetector);
     }
 
 }
