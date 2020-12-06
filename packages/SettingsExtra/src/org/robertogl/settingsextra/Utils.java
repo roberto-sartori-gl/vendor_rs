@@ -119,10 +119,17 @@ public final class Utils {
 	String currentBlackList = "";
 	currentBlackList = Settings.Secure.getString(context.getContentResolver(), "icon_blacklist");
 	if (currentBlackList == null) {
+		if (DEBUG) Log.d(TAG, "currentBlackList is null, adding out unwanted icon");
 		Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", unWantedIcon);
 		return;
 	}
-	if (currentBlackList.contains(unWantedIcon)) return;
-	else Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", currentBlackList + "," + unWantedIcon);
+	if (currentBlackList.contains(unWantedIcon)) {
+		if (DEBUG) Log.d(TAG, "currentBlackList already contains our unwated icon");
+		return;
+	}
+	else {
+		if (DEBUG) Log.d(TAG, "currentBlackList does not contain our unwated icon, adding it!");
+		Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", currentBlackList + "," + unWantedIcon);
+	}
     }
 }

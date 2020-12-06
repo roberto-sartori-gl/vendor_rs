@@ -108,6 +108,8 @@ public class MainService extends AccessibilityService {
     private MediaRecorder mCallRecorder;
 
     private void updateBatteryLevel(int batteryLevel) {
+	Utils.removeUnwantendStatusBarIcon(this, "rotate");
+	Utils.removeUnwantendStatusBarIcon(this, "bluetooth");
 	if (DEBUG) Log.d(TAG, "bluetooth: updating icon on status bar with battery level: " + batteryLevel);
 	int iconId = 0;
 	mStatusBarManager = (StatusBarManager)getSystemService(STATUS_BAR_SERVICE);
@@ -135,6 +137,8 @@ public class MainService extends AccessibilityService {
              iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_0;
         }
 	mStatusBarManager.setIcon("bluetooth_extra", iconId, 0, null);
+	// Actually show the icon
+	mStatusBarManager.setIconVisibility("bluetooth_extra", true);
     }
 
     private final BroadcastReceiver mBluetoothReceiver = new BroadcastReceiver() {
@@ -150,6 +154,7 @@ public class MainService extends AccessibilityService {
 		    case BluetoothAdapter.STATE_DISCONNECTED:
 			if (DEBUG) Log.d(TAG, "bluetooth in STATE_OFF/DISCONNECTED");
 			mBluetoothBatteryConnectedAddress.clear();
+			mStatusBarManager.setIconVisibility("bluetooth_extra", false);
 			mStatusBarManager.removeIcon("bluetooth_extra");
 			isBluetoothOff = true;
 			bluetoothDeviceConnected = 0;
@@ -163,6 +168,7 @@ public class MainService extends AccessibilityService {
 		if (bluetoothDeviceConnected == 0) {
 			if (DEBUG) Log.d(TAG, "bluetooth devices all disconnected");
 			mBluetoothBatteryConnectedAddress.clear();
+			mStatusBarManager.setIconVisibility("bluetooth_extra", false);
 			mStatusBarManager.removeIcon("bluetooth_extra");
 			isBluetoothOff = true;
 		} else if (mBluetoothBatteryConnectedAddress.size() > 0) {
