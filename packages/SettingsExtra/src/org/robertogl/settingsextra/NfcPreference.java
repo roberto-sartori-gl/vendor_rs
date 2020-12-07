@@ -14,12 +14,12 @@ public class NfcPreference extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
-	// We need to kill this activity immediately, or sometimes we'll see this activity UI instead of the NFC settings
-	this.finish();
+        // We need to kill this activity immediately, or sometimes we'll see this activity UI instead of the NFC settings
+        this.finish();
     }
 
     @Override
     protected void onDestroy() {
-	super.onDestroy();
+        super.onDestroy();
     }
 }

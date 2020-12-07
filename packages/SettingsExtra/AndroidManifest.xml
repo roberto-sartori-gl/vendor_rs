@@ -1,34 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-        android:sharedUserId="android.uid.system"
-        package="org.robertogl.settingsextra"
-        android:versionCode="1"
-        android:versionName="1.0" >
+    package="org.robertogl.settingsextra"
+    android:sharedUserId="android.uid.system"
+    android:versionCode="1"
+    android:versionName="1.0">
 
-        <uses-sdk
-		android:minSdkVersion="30"
-		android:targetSdkVersion="30"/>
+    <application
+        android:directBootAware="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="SettingsExtra"
+        android:persistent="true">
 
-	<protected-broadcast android:name="android.service.quicksettings.action.REQUEST_LISTENING" />
+        <activity
+            android:name="org.robertogl.settingsextra.SettingsExtraActivity"
+            android:label="@string/settingsextra_display_title"
+            android:theme="@style/Theme.AppCompat">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
-	<uses-permission android:name="android.permission.VIBRATE" />
-	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
-	<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
-	<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-	<uses-permission android:name="android.permission.RECORD_AUDIO"/>
-	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-	<uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"/>
+        <activity
+            android:name=".NfcPreference"
+            android:excludeFromRecents="true"
+            android:label="NfcPreferenceStub"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+        </activity>
 
-	<application
-            android:label="SettingsExtra"
-            android:icon="@mipmap/ic_launcher"
-            android:directBootAware="true"
-            android:persistent="true">
-
-	 <receiver android:name="org.robertogl.settingsextra.BootCompletedReceiver">
+        <receiver android:name="org.robertogl.settingsextra.BootCompletedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -36,10 +40,10 @@
         </receiver>
 
         <service
-	    android:name=".MainService"
-	    android:directBootAware="true"
-            android:persistent="true"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            android:name=".MainService"
+            android:directBootAware="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:persistent="true">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
@@ -48,42 +52,38 @@
                 android:resource="@xml/accessibility_service" />
         </service>
 
-	<service
+        <service
             android:name=".NfcTile"
             android:enabled="true"
-            android:label="NFC"
             android:icon="@drawable/ic_qs_nfc"
+            android:label="NFC"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
-                <action
-                    android:name="android.service.quicksettings.action.QS_TILE"/>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
             <meta-data
                 android:name="android.service.quicksettings.ACTIVE_TILE"
                 android:value="true" />
         </service>
 
-        <activity
-            android:name="org.robertogl.settingsextra.SettingsExtraActivity"
-		android:label="@string/settingsextra_display_title"
-		android:theme="@style/Theme.AppCompat">
-	    <intent-filter>
-		 <action android:name="android.intent.action.MAIN" />
-                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-	<activity
-	    android:name=".NfcPreference"
-	    android:label="NfcPreferenceStub"
-	    android:excludeFromRecents="true"
-	    android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES"/>
-            </intent-filter>
-        </activity>
-
     </application>
+
+    <protected-broadcast android:name="android.service.quicksettings.action.REQUEST_LISTENING" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
+
+    <uses-sdk
+        android:minSdkVersion="30"
+        android:targetSdkVersion="30" />
 
 </manifest>
 

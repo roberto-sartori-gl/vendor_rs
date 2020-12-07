@@ -14,6 +14,7 @@ import android.hardware.display.DisplayManager;
 import android.view.Display;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -29,52 +31,51 @@ import android.provider.Settings;
 
 public final class Utils {
 
-   private static final String TAG = "SettingsExtraUtils";
+    private static final String TAG = "SettingsExtraUtils";
 
-   private static final boolean DEBUG = false;
+    private static final boolean DEBUG = false;
 
-   protected static String keySwapNode = "/proc/s1302/key_rep";
+    protected static String keySwapNode = "/proc/s1302/key_rep";
 
-   protected static String displayModeSRGBNode = "/sys/devices/virtual/graphics/fb0/srgb";
+    protected static String displayModeSRGBNode = "/sys/devices/virtual/graphics/fb0/srgb";
 
-   protected static String displayModeDCIP3Node = "/sys/devices/virtual/graphics/fb0/dci_p3";
+    protected static String displayModeDCIP3Node = "/sys/devices/virtual/graphics/fb0/dci_p3";
 
-   protected static String flickerFreeNode = "/proc/flicker_free/flicker_free";
+    protected static String flickerFreeNode = "/proc/flicker_free/flicker_free";
 
-   protected static String dozeWakeupNode = "/proc/touchpanel/tp_f4";
+    protected static String dozeWakeupNode = "/proc/touchpanel/tp_f4";
 
-   protected static String flickerFreeMinBrightness = "/proc/flicker_free/flicker_free";
+    protected static String flickerFreeMinBrightness = "/proc/flicker_free/flicker_free";
 
-   protected static String readFromFile(String path) {
+    protected static String readFromFile(String path) {
         String aBuffer = "";
-        try  {
-             File myFile = new File(path);
-             FileInputStream fIn = new FileInputStream(myFile);
-             BufferedReader myReader = new BufferedReader(new InputStreamReader(fIn));
-             String aDataRow = "";
-             while ((aDataRow = myReader.readLine()) != null) {
-                     aBuffer += aDataRow;
-             }
-             myReader.close();
+        try {
+            File myFile = new File(path);
+            FileInputStream fIn = new FileInputStream(myFile);
+            BufferedReader myReader = new BufferedReader(new InputStreamReader(fIn));
+            String aDataRow = "";
+            while ((aDataRow = myReader.readLine()) != null) {
+                aBuffer += aDataRow;
+            }
+            myReader.close();
         } catch (FileNotFoundException e) {
-             e.printStackTrace();
+            e.printStackTrace();
         } catch (IOException e) {
-             e.printStackTrace();
+            e.printStackTrace();
         }
         return aBuffer;
     }
 
     protected static void writeToFile(String path, String data, Context context) {
-        try  {
-	     OutputStreamWriter outputStreamWriter =  new OutputStreamWriter(new FileOutputStream(new File(path)));
+        try {
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(new File(path)));
 
-             //OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(path, Context.MODE_PRIVATE));
-             outputStreamWriter.write(data);
-             outputStreamWriter.close();
-             }
-        catch (IOException e) {
-             Log.e("Exception", "File write failed: " + e.toString());
-             }
+            //OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(path, Context.MODE_PRIVATE));
+            outputStreamWriter.write(data);
+            outputStreamWriter.close();
+        } catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
     }
 
     protected static void doHapticFeedback(Vibrator mVibrator, int msVibrationLenght) {
@@ -99,9 +100,9 @@ public final class Utils {
         Process sh = null;
         String[] cmd = {"setprop", property, value};
         try {
-             sh = Runtime.getRuntime().exec(cmd);
+            sh = Runtime.getRuntime().exec(cmd);
         } catch (IOException e) {
-             e.printStackTrace();
+            e.printStackTrace();
         }
         try {
             sh.waitFor();
@@ -116,20 +117,19 @@ public final class Utils {
     }
 
     protected static void removeUnwantendStatusBarIcon(Context context, String unWantedIcon) {
-	String currentBlackList = "";
-	currentBlackList = Settings.Secure.getString(context.getContentResolver(), "icon_blacklist");
-	if (currentBlackList == null) {
-		if (DEBUG) Log.d(TAG, "currentBlackList is null, adding out unwanted icon");
-		Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", unWantedIcon);
-		return;
-	}
-	if (currentBlackList.contains(unWantedIcon)) {
-		if (DEBUG) Log.d(TAG, "currentBlackList already contains our unwated icon");
-		return;
-	}
-	else {
-		if (DEBUG) Log.d(TAG, "currentBlackList does not contain our unwated icon, adding it!");
-		Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", currentBlackList + "," + unWantedIcon);
-	}
+        String currentBlackList = "";
+        currentBlackList = Settings.Secure.getString(context.getContentResolver(), "icon_blacklist");
+        if (currentBlackList == null) {
+            if (DEBUG) Log.d(TAG, "currentBlackList is null, adding out unwanted icon");
+            Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", "," + unWantedIcon);
+            return;
+        }
+        if (currentBlackList.contains(unWantedIcon)) {
+            if (DEBUG) Log.d(TAG, "currentBlackList already contains our unwated icon");
+            return;
+        } else {
+            if (DEBUG) Log.d(TAG, "currentBlackList does not contain our unwated icon, adding it!");
+            Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", currentBlackList + "," + unWantedIcon);
+        }
     }
 }

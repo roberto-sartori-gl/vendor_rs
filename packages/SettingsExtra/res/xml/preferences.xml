@@ -11,7 +11,6 @@
 		app:allowDividerAbove="false"
 		app:iconSpaceReserved="false"
 		app:allowDividerBelow="false">
-		<!--        android:textColor="@color/pressed_mega">  -->
 
 		<androidx.preference.SwitchPreferenceCompat
 			android:key="buttonSwap"
@@ -22,51 +21,84 @@
 			app:iconSpaceReserved="false" />
 	</androidx.preference.PreferenceCategory>
 
-        <androidx.preference.PreferenceCategory
-                android:key="display_menu"
-                android:title="Display Options"
-                app:allowDividerAbove="false"
-                app:iconSpaceReserved="false"
-                app:allowDividerBelow="false">
+	<androidx.preference.PreferenceCategory
+			android:key="display_menu"
+			android:title="Display Options"
+			app:allowDividerAbove="false"
+			app:iconSpaceReserved="false"
+			app:allowDividerBelow="false">
 
-                <androidx.preference.SwitchPreferenceCompat
-                        android:key="flickerFree"
+		<androidx.preference.SwitchPreferenceCompat
+			android:key="flickerFree"
 			android:title="Enable DC Dimming (flicker free display)"
-                        android:defaultValue="false"
-                        app:allowDividerAbove="true"
-                        app:allowDividerBelow="true"
+			android:defaultValue="false"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
 			app:iconSpaceReserved="false" />
 
-                <androidx.preference.ListPreference
-                        app:defaultValue="normal"
-                        app:persistent="true"
-                        app:key="display_mode"
-                        app:entries="@array/displayMode"
-                        app:entryValues="@array/displayModeValues"
-                        app:summary="Select display color gamut"
-                        app:title="Display color mode"
-                        app:allowDividerAbove="true"
-                        app:allowDividerBelow="true"
-                        app:iconSpaceReserved="false" />
+		<androidx.preference.ListPreference
+			app:defaultValue="normal"
+			app:persistent="true"
+			app:key="display_mode"
+			app:entries="@array/displayMode"
+			app:entryValues="@array/displayModeValues"
+			app:summary="Select display color gamut"
+			app:title="Display color mode"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
 
 	</androidx.preference.PreferenceCategory>
 
-        <androidx.preference.PreferenceCategory
-                android:key="misc_menu"
-                android:title="Misc"
-                app:allowDividerAbove="false"
-                app:iconSpaceReserved="false"
-                app:allowDividerBelow="false">
+	<androidx.preference.PreferenceCategory
+		android:key="misc_menu"
+		android:title="Misc"
+		app:allowDividerAbove="false"
+		app:iconSpaceReserved="false"
+		app:allowDividerBelow="false">
 
-                <androidx.preference.SwitchPreferenceCompat
-                        android:key="areWeAllowedToRecordCall"
-                        android:title="Enable call recording"
-                        app:summary="Recordings are available in the CallRecording folder"
-                        android:defaultValue="false"
-                        app:allowDividerAbove="true"
-                        app:allowDividerBelow="true"
-                        app:iconSpaceReserved="false" />
+		<androidx.preference.SwitchPreferenceCompat
+			android:key="areWeAllowedToRecordCall"
+			android:title="Enable call recording"
+			app:summary="Recordings are available in the CallRecording folder"
+			android:defaultValue="false"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
 
+		<androidx.preference.SwitchPreferenceCompat
+			android:key="dynamicModem"
+			android:title="Enable Dynamic Modem"
+			android:defaultValue="false"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
+		<androidx.preference.ListPreference
+			app:dependency="dynamicModem"
+			app:defaultValue="1"
+			app:persistent="true"
+			app:key="preferred_network_mode_key_wifi"
+			app:entries="@array/preferred_network_mode_choices"
+			app:entryValues="@array/preferred_network_mode_values"
+			app:summary="Set the network mode when wifi is connected"
+			app:title="Network mode when wifi connected"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
+		<androidx.preference.ListPreference
+			app:dependency="dynamicModem"
+			app:defaultValue="20"
+			app:key="preferred_network_mode_key"
+			app:persistent="true"
+			app:title="Network mode when wifi disconnected"
+			app:summary="Set the network mode when wifi is disconnected"
+			app:entries="@array/preferred_network_mode_choices"
+			app:entryValues="@array/preferred_network_mode_values"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
         </androidx.preference.PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

@@ -1,13 +1,16 @@
 package org.robertogl.settingsextra;
 
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
+
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 import androidx.preference.Preference.OnPreferenceChangeListener;
 import androidx.preference.ListPreference;
 import androidx.preference.PreferenceScreen;
 import androidx.preference.PreferenceFragmentCompat;
+
 import android.util.Log;
 
 public class SettingsExtraActivity extends AppCompatActivity {
@@ -17,7 +20,7 @@ public class SettingsExtraActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-	setContentView(R.layout.main_settings);
+        setContentView(R.layout.main_settings);
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.main_setting, new SettingsExtraFragment())
