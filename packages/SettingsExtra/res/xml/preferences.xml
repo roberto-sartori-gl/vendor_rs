@@ -89,7 +89,7 @@
 
 		<androidx.preference.ListPreference
 			app:dependency="dynamicModem"
-			app:defaultValue="20"
+			app:defaultValue="27"
 			app:key="preferred_network_mode_key"
 			app:persistent="true"
 			app:title="Network mode when wifi disconnected"
