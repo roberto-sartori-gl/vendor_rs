@@ -44,6 +44,7 @@ public class CallRecording {
     }
 
     protected void onClose() {
+        if (mContext == null) return;
         mContext.unregisterReceiver(CallRecorderReceiver);
         mContext.unregisterReceiver(OutGoingNumDetector);
     }

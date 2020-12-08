@@ -92,24 +92,23 @@ public class MainService extends AccessibilityService {
 				    mCallRecording.stopListening = true;
 					Toast.makeText(mContext, "Changes will be effective after the current call", Toast.LENGTH_LONG).show();
 				}
-			}
-            else if (key.equals("dynamicModem")) {
-                //String networkMode = prefs.getString("network_mode_wificonnected", "default");
-                //if (DEBUG) Log.d(TAG, "Selected Network mode when wifi connected: " + networkMode);
-                //boolean force2G = !"default".equals(networkMode);
+            } else if (key.equals("dynamicModem")) {
                 boolean dynamicModem = prefs.getBoolean("dynamicModem", false);
                 if (dynamicModem) {
                     if (DEBUG) Log.d(TAG, "Starting connectivityManagerExtra service");
                     mConnectivityManagerExtra.onStartup(mContext);
-                    //mConnectivityManagerExtra.force2G = true;
-                } else /*mConnectivityManagerExtra.force2G = false;*/ mConnectivityManagerExtra.onClose();
-            }
-            else if (key.equals("preferred_network_mode_key_wifi") || key.equals("preferred_network_mode_key")) {
+                } else
+                    mConnectivityManagerExtra.onClose();
+            } else if (key.equals("preferred_network_mode_key_wifi") || key.equals("preferred_network_mode_key")) {
                 // Settings changed for ConnectivityManagerExtra
-                if (DEBUG) Log.d(TAG, "Updating network settings for ConnectivityManagerExtra");
-                mConnectivityManagerExtra.forceNetworkSettingsUpdate();
+                if (DEBUG) Log.d(TAG, "Network settings for ConnectivityManagerExtra changed");
+                boolean dynamicModem = prefs.getBoolean("dynamicModem", false);
+                if (dynamicModem) {
+                    if (DEBUG) Log.d(TAG, "Updating network settings for ConnectivityManagerExtra");
+                    mConnectivityManagerExtra.forceNetworkSettingsUpdate();
+                }
             }
-		}
+        }
 	};
 
     @Override
@@ -161,13 +160,11 @@ public class MainService extends AccessibilityService {
         screenActionFilter.addAction(Intent.ACTION_SCREEN_ON);
         registerReceiver(mScreenStateReceiver, screenActionFilter);
 
-        // Start the Connectivity Manager Extra servicwe
-        if (DEBUG) Log.d(TAG, "Starting the ConnectivityManagerExtra service");
-
-        // Enable the dynamic modem if the user enabled it
+        // Enable the Dynamic Modem if the user enabled it
         boolean dynamicModem = pref.getBoolean("dynamicModem", false);
         if (dynamicModem) {
             if (DEBUG) Log.d(TAG, "Starting Dynamic Modem");
+            // At the moment, ConnectivityManagerExtra only manages the Dynamic Modem
             mConnectivityManagerExtra.onStartup(this);
         }
 

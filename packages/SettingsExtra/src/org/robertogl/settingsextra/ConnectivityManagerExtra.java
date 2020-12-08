@@ -53,6 +53,7 @@ public class ConnectivityManagerExtra {
     }
 
     protected void onClose() {
+        if (mContext == null) return;
         forceDefaultNetworkMode();
         connMgr.unregisterNetworkCallback(mNetworkCallback);
     }
