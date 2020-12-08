@@ -19,7 +19,7 @@ public class BluetoothBatteryIcon {
 
     private static final String TAG = "BluetoothBatteryIcon";
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = MainService.DEBUG;
 
     private Context mContext;
 

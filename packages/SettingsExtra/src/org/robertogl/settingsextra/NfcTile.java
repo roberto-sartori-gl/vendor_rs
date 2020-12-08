@@ -14,7 +14,7 @@ public class NfcTile extends TileService {
 
     private static String TAG = "NfcTile";
 
-    private static boolean DEBUG = false;
+    private static boolean DEBUG = MainService.DEBUG;
 
     @Override
     public void onCreate() {

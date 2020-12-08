@@ -21,7 +21,7 @@ public class SettingsExtraFragment extends PreferenceFragmentCompat {
 
     private static String TAG = "SettingsExtraFragment";
 
-    private static boolean DEBUG = false;
+    private static boolean DEBUG = MainService.DEBUG;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {

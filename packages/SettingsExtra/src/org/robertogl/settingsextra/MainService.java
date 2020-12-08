@@ -38,7 +38,7 @@ import android.widget.Toast;
 public class MainService extends AccessibilityService {
     private static final String TAG = "MainService";
 
-    private static final boolean DEBUG = false;
+    protected static final boolean DEBUG = false;
 
     // Slider key codes
     private static final int MODE_NORMAL = 603;

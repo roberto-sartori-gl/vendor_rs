@@ -17,7 +17,7 @@ public class ConnectivityManagerExtra {
 
     private String TAG = "ConnectivityManagerExtra";
 
-    private boolean DEBUG = false;
+    private boolean DEBUG = MainService.DEBUG;
 
     private Context mContext;
 

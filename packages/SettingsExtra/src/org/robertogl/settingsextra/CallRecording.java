@@ -20,7 +20,7 @@ public class CallRecording {
 
     private String TAG = "CallRecordingService";
 
-    private boolean DEBUG = false;
+    private boolean DEBUG = MainService.DEBUG;
 
     private MediaRecorder mCallRecorder;
 

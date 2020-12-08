@@ -21,9 +21,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 
     private static final String TAG = "SettingsExtraBootReceiver";
 
-    private boolean isThisFirstBoot = true;
-
-    private boolean DEBUG = false;
+    private boolean DEBUG = MainService.DEBUG;
 
     private static final String AccessibilityService = ".MainService";
 

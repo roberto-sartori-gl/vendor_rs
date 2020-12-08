@@ -33,7 +33,7 @@ public final class Utils {
 
     private static final String TAG = "SettingsExtraUtils";
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = MainService.DEBUG;
 
     protected static String keySwapNode = "/proc/s1302/key_rep";
 
