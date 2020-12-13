@@ -64,9 +64,9 @@ public class MainService extends AccessibilityService {
     private final ImsMmTelManagerExtra mImsMmTelManagerExtra_1 = new ImsMmTelManagerExtra();
     private final ImsMmTelManagerExtra mImsMmTelManagerExtra_2 = new ImsMmTelManagerExtra();
 
-	private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-		@Override
-		public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
             switch (key) {
                 case "areWeAllowedToRecordCall":
                     boolean areWeAllowedToRecordCall = prefs.getBoolean("areWeAllowedToRecordCall", false);
@@ -129,13 +129,13 @@ public class MainService extends AccessibilityService {
 
                     } else {
                         if (DEBUG) Log.d(TAG, "Closing the mImsMmTelManagerExtra services");
-                        if(isImsMmTelManagerExtraRunning_1) mImsMmTelManagerExtra_1.onClose();
-                        if(isImsMmTelManagerExtraRunning_2) mImsMmTelManagerExtra_2.onClose();
+                        if (isImsMmTelManagerExtraRunning_1) mImsMmTelManagerExtra_1.onClose();
+                        if (isImsMmTelManagerExtraRunning_2) mImsMmTelManagerExtra_2.onClose();
                     }
                 }
             }
         }
-	};
+    };
 
     @Override
     public void onDestroy() {
@@ -149,7 +149,7 @@ public class MainService extends AccessibilityService {
         mImsMmTelManagerExtra_2.onClose();
     }
 
-	@Override
+    @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
         if (DEBUG) Log.d(TAG, "service is connected");
@@ -157,10 +157,10 @@ public class MainService extends AccessibilityService {
         mAudioManager = mContext.getSystemService(AudioManager.class);
         mVibrator = mContext.getSystemService(Vibrator.class);
 
-		Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
-		SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+        Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
+        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
 
-		pref.registerOnSharedPreferenceChangeListener(mPreferenceListener);
+        pref.registerOnSharedPreferenceChangeListener(mPreferenceListener);
 
         // Set the status at boot following the slider position
         // Do this in case the user changes the slider position while the phone is off, for example
@@ -197,17 +197,17 @@ public class MainService extends AccessibilityService {
         }
 
         // Start the NFC tile monitoring service
-		mNfcMonitor.onStartup(this);
+        mNfcMonitor.onStartup(this);
 
-		// Start the Bluetooth battery icon on the status bar monitoring service
-		mBluetoothBatteryIcon.onStartup(this);
+        // Start the Bluetooth battery icon on the status bar monitoring service
+        mBluetoothBatteryIcon.onStartup(this);
 
-		// Start the CallRecording service if the user enabled the service
-		boolean areWeAllowedToRecordCall = pref.getBoolean("areWeAllowedToRecordCall", false);
-		if (areWeAllowedToRecordCall) {
-		    if (DEBUG) Log.d(TAG, "Starting the CallRecording service");
-			mCallRecording.onStartup(this);
-		}
+        // Start the CallRecording service if the user enabled the service
+        boolean areWeAllowedToRecordCall = pref.getBoolean("areWeAllowedToRecordCall", false);
+        if (areWeAllowedToRecordCall) {
+            if (DEBUG) Log.d(TAG, "Starting the CallRecording service");
+            mCallRecording.onStartup(this);
+        }
 
         // Start the ImsMmTelManagerExtra service if the user wants VoLTE or VoWiFi icon on status bar
         boolean shouldWeShowImsIcons = pref.getBoolean("showVolteIcon", false);
@@ -344,7 +344,7 @@ public class MainService extends AccessibilityService {
                         wakeLock = manager.newWakeLock(PowerManager.FULL_WAKE_LOCK |
                                 PowerManager.ACQUIRE_CAUSES_WAKEUP |
                                 PowerManager.ON_AFTER_RELEASE, "SettingsExtra: WakeLock");
-                        wakeLock.acquire(5*1000L /*5 seconds*/);
+                        wakeLock.acquire(5 * 1000L /*5 seconds*/);
                         wakeLock.release();
                         return true;
                     }
