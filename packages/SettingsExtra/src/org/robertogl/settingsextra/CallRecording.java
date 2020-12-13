@@ -18,9 +18,9 @@ import java.util.Locale;
 
 public class CallRecording {
 
-    private String TAG = "CallRecordingService";
+    private final String TAG = "CallRecordingService";
 
-    private boolean DEBUG = MainService.DEBUG;
+    private final boolean DEBUG = MainService.DEBUG;
 
     private MediaRecorder mCallRecorder;
 

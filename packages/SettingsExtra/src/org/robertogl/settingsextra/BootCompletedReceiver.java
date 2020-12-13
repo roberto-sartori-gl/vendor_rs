@@ -1,21 +1,17 @@
 package org.robertogl.settingsextra;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 
 import static android.content.Context.MODE_PRIVATE;
 
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.Intent;
-import android.util.Log;
-import android.provider.Settings;
-import android.content.ContentResolver;
-import android.content.ComponentName;
 import android.os.Handler;
 import android.os.Looper;
-
-import java.lang.Runnable;
+import android.util.Log;
+import android.provider.Settings;
 
 public class BootCompletedReceiver extends BroadcastReceiver {
 
@@ -67,7 +63,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         else if (displayMode.equals("dcip3"))
             Utils.writeToFile(Utils.displayModeDCIP3Node, "1", deviceProtectedContext);
 
-        // Update the NfcTile
+        // Update the NfcTile with current status
         Handler mainHandler = new Handler(Looper.getMainLooper());
         Runnable myRunnable = new Runnable() {
             @Override

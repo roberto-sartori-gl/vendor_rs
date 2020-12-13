@@ -10,24 +10,21 @@ import android.net.wifi.WifiManager;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.telephony.RadioAccessFamily;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class ConnectivityManagerExtra {
 
-    private String TAG = "ConnectivityManagerExtra";
+    private final String TAG = "ConnectivityManagerExtra";
 
-    private boolean DEBUG = MainService.DEBUG;
+    private final boolean DEBUG = MainService.DEBUG;
 
     private Context mContext;
 
     private ConnectivityManager connMgr;
 
     private boolean isWifiConnected = false;
-
-    /*private SubscriptionManager mSubMgr;
-
-    private int currentEnabledSIM;*/
 
     protected void onStartup(Context context) {
         mContext = context;
@@ -46,10 +43,6 @@ public class ConnectivityManagerExtra {
             isWifiConnected = true;
             forceNetworkMode();
         }
-
-        /*currentEnabledSIM = SubscriptionManager.getDefaultDataSubscriptionId();
-        mSubMgr = (SubscriptionManager) mContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-        mSubMgr.addOnSubscriptionsChangedListener(mSubscriptionsChangedListener);*/
     }
 
     protected void onClose() {
@@ -58,28 +51,7 @@ public class ConnectivityManagerExtra {
         connMgr.unregisterNetworkCallback(mNetworkCallback);
     }
 
-
-    /*private SubscriptionManager.OnSubscriptionsChangedListener mSubscriptionsChangedListener = new SubscriptionManager.OnSubscriptionsChangedListener() {
-        @Override
-        public void onSubscriptionsChanged() {
-            if (DEBUG) Log.d(TAG, "Subscription changed");
-            int newDefaultSIM = SubscriptionManager.getDefaultDataSubscriptionId();
-            if (currentEnabledSIM == newDefaultSIM) {
-                if (DEBUG) Log.d(TAG, "Old subscription is the same as new subscription...");
-                return;
-            }
-            currentEnabledSIM = newDefaultSIM;
-            if (isWifiConnected) forceNetworkMode();
-            else forceDefaultNetworkMode();
-        }
-    };*/
-
-    private ConnectivityManager.NetworkCallback mNetworkCallback = new ConnectivityManager.NetworkCallback() {
-        /*@Override
-        public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
-            // Code!
-        }*/
-
+    private final ConnectivityManager.NetworkCallback mNetworkCallback = new ConnectivityManager.NetworkCallback() {
         @Override
         public void onAvailable(Network network) {
             if (DEBUG) Log.d(TAG, "network: connection event");
@@ -135,7 +107,7 @@ public class ConnectivityManagerExtra {
             Log.d(TAG, "Setting default preferred network as wifi is disconnected");
         Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
         SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
-        int networkMode = Integer.valueOf(pref.getString("preferred_network_mode_key", "0"));
+        int networkMode = Integer.parseInt(pref.getString("preferred_network_mode_key", "0"));
         if (DEBUG) Log.d(TAG, "Default networkMode : " + networkMode);
         int defaultSubId = SubscriptionManager.getDefaultDataSubscriptionId();
         if (defaultSubId == SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
@@ -143,15 +115,19 @@ public class ConnectivityManagerExtra {
             return;
         }
         if (DEBUG) Log.d(TAG, "Subscription id on forceDefaultNetworkMode: " + defaultSubId);
-        TelephonyManager mTelephony = mContext.getSystemService(TelephonyManager.class);
-        mTelephony.setPreferredNetworkType(defaultSubId, networkMode);
-        if (DEBUG) Log.d(TAG, "We support " +  mTelephony.getActiveModemCount() + " sim");
+        TelephonyManager mTelephonyCreator = mContext.getSystemService(TelephonyManager.class);
+        TelephonyManager mTelephony = mTelephonyCreator.createForSubscriptionId(defaultSubId);
+        mTelephony.setPreferredNetworkTypeBitmask(RadioAccessFamily.getRafFromNetworkType(networkMode));
+        if (DEBUG) Log.d(TAG, "We support " + mTelephony.getActiveModemCount() + " sim");
         // Just a safety check: on my device, I've always two active modems even with only one sim inserted
         if (mTelephony.getActiveModemCount() > 1) {
-            if (defaultSubId == 1)
-                mTelephony.setPreferredNetworkType(defaultSubId + 1, networkMode);
-            else if (defaultSubId == 2)
-                mTelephony.setPreferredNetworkType(defaultSubId - 1, networkMode);
+            if (defaultSubId == 1) {
+                mTelephony = mTelephonyCreator.createForSubscriptionId(defaultSubId + 1);
+                mTelephony.setPreferredNetworkTypeBitmask(RadioAccessFamily.getRafFromNetworkType(networkMode));
+            } else if (defaultSubId == 2) {
+                mTelephony = mTelephonyCreator.createForSubscriptionId(defaultSubId - 1);
+                mTelephony.setPreferredNetworkTypeBitmask(RadioAccessFamily.getRafFromNetworkType(networkMode));
+            }
         }
     }
 
@@ -159,7 +135,7 @@ public class ConnectivityManagerExtra {
         if (DEBUG) Log.d(TAG, "Setting default preferred network as wifi is connected");
         Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
         SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
-        int networkMode = Integer.valueOf(pref.getString("preferred_network_mode_key_wifi", "0"));
+        int networkMode = Integer.parseInt(pref.getString("preferred_network_mode_key_wifi", "0"));
         if (DEBUG) Log.d(TAG, "networkMode with wifi on: " + networkMode);
         int defaultSubId = SubscriptionManager.getDefaultDataSubscriptionId();
         if (defaultSubId == SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
@@ -167,15 +143,19 @@ public class ConnectivityManagerExtra {
             return;
         }
         if (DEBUG) Log.d(TAG, "Subscription id on forceNetworkMode: " + defaultSubId);
-        TelephonyManager mTelephony = mContext.getSystemService(TelephonyManager.class);
-        mTelephony.setPreferredNetworkType(defaultSubId, networkMode);
-        if (DEBUG) Log.d(TAG, "We support " +  mTelephony.getActiveModemCount() + " sim");
+        TelephonyManager mTelephonyCreator = mContext.getSystemService(TelephonyManager.class);
+        TelephonyManager mTelephony = mTelephonyCreator.createForSubscriptionId(defaultSubId);
+        mTelephony.setPreferredNetworkTypeBitmask(RadioAccessFamily.getRafFromNetworkType(networkMode));
+        if (DEBUG) Log.d(TAG, "We support " + mTelephony.getActiveModemCount() + " sim");
         // Just a safety check: on my device, I've always two active modems even with only one sim inserted
         if (mTelephony.getActiveModemCount() > 1) {
-            if (defaultSubId == 1)
-                mTelephony.setPreferredNetworkType(defaultSubId + 1, networkMode);
-            else if (defaultSubId == 2)
-                mTelephony.setPreferredNetworkType(defaultSubId - 1, networkMode);
+            if (defaultSubId == 1) {
+                mTelephony = mTelephonyCreator.createForSubscriptionId(defaultSubId + 1);
+                mTelephony.setPreferredNetworkTypeBitmask(RadioAccessFamily.getRafFromNetworkType(networkMode));
+            } else if (defaultSubId == 2) {
+                mTelephony = mTelephonyCreator.createForSubscriptionId(defaultSubId - 1);
+                mTelephony.setPreferredNetworkTypeBitmask(RadioAccessFamily.getRafFromNetworkType(networkMode));
+            }
         }
     }
 }

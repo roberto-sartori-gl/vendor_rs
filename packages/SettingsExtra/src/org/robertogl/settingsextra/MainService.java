@@ -1,23 +1,9 @@
-/*
- * Copyright (C) 2018 The LineageOS Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.robertogl.settingsextra;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.view.KeyEvent;
 import android.util.Log;
@@ -49,8 +35,8 @@ public class MainService extends AccessibilityService {
     private static final int KEYCODE_F4 = 62;
 
     // Vibration duration in ms
-    private static final int msSilentVibrationLenght = 300;
-    private static final int msVibrateVibrationLenght = 200;
+    private static final int msSilentVibrationLength = 300;
+    private static final int msVibrateVibrationLength = 200;
 
     private static final int msDoubleClickThreshold = 250;
     private long msDoubleClick = 0;
@@ -68,44 +54,53 @@ public class MainService extends AccessibilityService {
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
 
-    private CallRecording mCallRecording = new CallRecording();
+    private final CallRecording mCallRecording = new CallRecording();
 
-    private NfcStatusMonitor mNfcMonitor = new NfcStatusMonitor();
+    private final NfcStatusMonitor mNfcMonitor = new NfcStatusMonitor();
 
-    private BluetoothBatteryIcon mBluetoothBatteryIcon = new BluetoothBatteryIcon();
+    private final BluetoothBatteryIcon mBluetoothBatteryIcon = new BluetoothBatteryIcon();
 
-    private ConnectivityManagerExtra mConnectivityManagerExtra = new ConnectivityManagerExtra();
+    private final ConnectivityManagerExtra mConnectivityManagerExtra = new ConnectivityManagerExtra();
 
-	private  SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+	private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 		@Override
 		public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-			if (key.equals("areWeAllowedToRecordCall")) {
-				boolean areWeAllowedToRecordCall = prefs.getBoolean("areWeAllowedToRecordCall", false);
-				if (DEBUG) Log.d(TAG, "Preference change received. areWeAllowedToRecordCall now is: " + areWeAllowedToRecordCall);
-				if (areWeAllowedToRecordCall) {
-					// Start the CallRecording service if the user enabled the service
-					mCallRecording.onStartup(mContext);
-				} else if (!mCallRecording.areWeRecordingACall) {
-					// Stop the CallRecording service now
-					mCallRecording.onClose();
-				} else {
-				    mCallRecording.stopListening = true;
-					Toast.makeText(mContext, "Changes will be effective after the current call", Toast.LENGTH_LONG).show();
-				}
-            } else if (key.equals("dynamicModem")) {
-                boolean dynamicModem = prefs.getBoolean("dynamicModem", false);
-                if (dynamicModem) {
-                    if (DEBUG) Log.d(TAG, "Starting connectivityManagerExtra service");
-                    mConnectivityManagerExtra.onStartup(mContext);
-                } else
-                    mConnectivityManagerExtra.onClose();
-            } else if (key.equals("preferred_network_mode_key_wifi") || key.equals("preferred_network_mode_key")) {
-                // Settings changed for ConnectivityManagerExtra
-                if (DEBUG) Log.d(TAG, "Network settings for ConnectivityManagerExtra changed");
-                boolean dynamicModem = prefs.getBoolean("dynamicModem", false);
-                if (dynamicModem) {
-                    if (DEBUG) Log.d(TAG, "Updating network settings for ConnectivityManagerExtra");
-                    mConnectivityManagerExtra.forceNetworkSettingsUpdate();
+            switch (key) {
+                case "areWeAllowedToRecordCall":
+                    boolean areWeAllowedToRecordCall = prefs.getBoolean("areWeAllowedToRecordCall", false);
+                    if (DEBUG)
+                        Log.d(TAG, "Preference change received. areWeAllowedToRecordCall now is: " + areWeAllowedToRecordCall);
+                    if (areWeAllowedToRecordCall) {
+                        // Start the CallRecording service if the user enabled the service
+                        mCallRecording.onStartup(mContext);
+                    } else if (!mCallRecording.areWeRecordingACall) {
+                        // Stop the CallRecording service now
+                        mCallRecording.onClose();
+                    } else {
+                        mCallRecording.stopListening = true;
+                        Toast.makeText(mContext, "Changes will be effective after the current call", Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case "dynamicModem": {
+                    boolean dynamicModem = prefs.getBoolean("dynamicModem", false);
+                    if (dynamicModem) {
+                        if (DEBUG) Log.d(TAG, "Starting connectivityManagerExtra service");
+                        mConnectivityManagerExtra.onStartup(mContext);
+                    } else
+                        mConnectivityManagerExtra.onClose();
+                    break;
+                }
+                case "preferred_network_mode_key_wifi":
+                case "preferred_network_mode_key": {
+                    // Settings changed for ConnectivityManagerExtra
+                    if (DEBUG) Log.d(TAG, "Network settings for ConnectivityManagerExtra changed");
+                    boolean dynamicModem = prefs.getBoolean("dynamicModem", false);
+                    if (dynamicModem) {
+                        if (DEBUG)
+                            Log.d(TAG, "Updating network settings for ConnectivityManagerExtra");
+                        mConnectivityManagerExtra.forceNetworkSettingsUpdate();
+                    }
+                    break;
                 }
             }
         }
@@ -141,15 +136,15 @@ public class MainService extends AccessibilityService {
         if (DEBUG) Log.d(TAG, "Tri Key state: " + tristate);
         if (tristate == 1) {
             // Silent mode
-            mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
+            mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
             mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
         } else if (tristate == 2) {
             // Vibration mode
-            mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+            mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
             mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
         } else if (tristate == 3) {
             // Normal mode
-            mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+            mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
             mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
         }
 
@@ -195,7 +190,7 @@ public class MainService extends AccessibilityService {
         return handleKeyEvent(event);
     }
 
-    private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
@@ -239,7 +234,7 @@ public class MainService extends AccessibilityService {
                     previousEventTime = System.currentTimeMillis();
                 }
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL) {
-                    mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+                    mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
                     mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
                 }
                 return true;
@@ -256,9 +251,9 @@ public class MainService extends AccessibilityService {
                     previousEventTime = System.currentTimeMillis();
                 }
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE) {
-                    mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+                    mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
                     mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
-                    Utils.doHapticFeedback(mVibrator, msVibrateVibrationLenght);
+                    Utils.doHapticFeedback(mVibrator, msVibrateVibrationLength);
                 }
                 return true;
             case MODE_SILENCE:
@@ -274,9 +269,9 @@ public class MainService extends AccessibilityService {
                     previousEventTime = System.currentTimeMillis();
                 }
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT) {
-                    mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
+                    mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
                     mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
-                    Utils.doHapticFeedback(mVibrator, msSilentVibrationLenght);
+                    Utils.doHapticFeedback(mVibrator, msSilentVibrationLength);
                 }
                 return true;
             case KEYCODE_BACK:
@@ -285,14 +280,12 @@ public class MainService extends AccessibilityService {
                     clickToShutdown += 1;
                     Utils.setProp("sys.button_backlight.on", "true");
                 } else {
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        public void run() {
-                            clickToShutdown -= 1;
-                            if (clickToShutdown <= 0) {
-                                clickToShutdown = 0;
-                                Utils.setProp("sys.button_backlight.on", "false");
-                            }
+                    Handler handler = new Handler(Looper.myLooper());
+                    handler.postDelayed(() -> {
+                        clickToShutdown -= 1;
+                        if (clickToShutdown <= 0) {
+                            clickToShutdown = 0;
+                            Utils.setProp("sys.button_backlight.on", "false");
                         }
                     }, 1500);
                 }
@@ -308,10 +301,9 @@ public class MainService extends AccessibilityService {
                         PowerManager.WakeLock wakeLock;
                         wakeLock = manager.newWakeLock(PowerManager.FULL_WAKE_LOCK |
                                 PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                                PowerManager.ON_AFTER_RELEASE, "WakeLock");
-                        wakeLock.acquire();
+                                PowerManager.ON_AFTER_RELEASE, "SettingsExtra: WakeLock");
+                        wakeLock.acquire(5*1000L /*5 seconds*/);
                         wakeLock.release();
-                        wakeLock = null;
                         return true;
                     }
                 }

@@ -21,8 +21,6 @@ public class NfcStatusMonitor {
                         NfcAdapter.STATE_OFF);
                 switch (state) {
                     case NfcAdapter.STATE_OFF:
-                        NfcTile.requestListeningState(context, new ComponentName(context, NfcTile.class));
-                        break;
                     case NfcAdapter.STATE_ON:
                         NfcTile.requestListeningState(context, new ComponentName(context, NfcTile.class));
                         break;

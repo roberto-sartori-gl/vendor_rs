@@ -1,12 +1,9 @@
 package org.robertogl.settingsextra;
 
+import android.annotation.Nullable;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-
-import android.util.Log;
-
-import androidx.annotation.Nullable;
 
 public class NfcPreference extends Activity {
 
