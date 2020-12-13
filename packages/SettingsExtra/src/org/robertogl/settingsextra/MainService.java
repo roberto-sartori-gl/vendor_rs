@@ -1,6 +1,5 @@
 package org.robertogl.settingsextra;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Looper;
@@ -62,6 +61,9 @@ public class MainService extends AccessibilityService {
 
     private final ConnectivityManagerExtra mConnectivityManagerExtra = new ConnectivityManagerExtra();
 
+    private final ImsMmTelManagerExtra mImsMmTelManagerExtra_1 = new ImsMmTelManagerExtra();
+    private final ImsMmTelManagerExtra mImsMmTelManagerExtra_2 = new ImsMmTelManagerExtra();
+
 	private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 		@Override
 		public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
@@ -102,6 +104,35 @@ public class MainService extends AccessibilityService {
                     }
                     break;
                 }
+                case "showVolteIcon":
+                case "showVowifiIcon": {
+                    if (DEBUG) Log.d(TAG, "Settings for ImsMmTelManagerExtra changed");
+                    boolean shouldWeShowVolteIcon = prefs.getBoolean("showVolteIcon", false);
+                    boolean shouldWeShowVoWifiIcon = prefs.getBoolean("showVowifiIcon", false);
+                    // Check if the services are running
+                    boolean isImsMmTelManagerExtraRunning_1 = mImsMmTelManagerExtra_1.isRunning;
+                    boolean isImsMmTelManagerExtraRunning_2 = mImsMmTelManagerExtra_2.isRunning;
+                    // If volte or vowifi icons should be shown but the services are not running, start them
+                    if (shouldWeShowVolteIcon || shouldWeShowVoWifiIcon) {
+                        if (!isImsMmTelManagerExtraRunning_1) {
+                            if (DEBUG) Log.d(TAG, "Starting the mImsMmTelManagerExtra_1 service");
+                            mImsMmTelManagerExtra_1.onStartup(mContext, 1);
+                        } else {
+                            mImsMmTelManagerExtra_1.notifyUserSettingChange();
+                        }
+                        if (!isImsMmTelManagerExtraRunning_2) {
+                            if (DEBUG) Log.d(TAG, "Starting the mImsMmTelManagerExtra_2 service");
+                            mImsMmTelManagerExtra_2.onStartup(mContext, 2);
+                        } else {
+                            mImsMmTelManagerExtra_2.notifyUserSettingChange();
+                        }
+
+                    } else {
+                        if (DEBUG) Log.d(TAG, "Closing the mImsMmTelManagerExtra services");
+                        if(isImsMmTelManagerExtraRunning_1) mImsMmTelManagerExtra_1.onClose();
+                        if(isImsMmTelManagerExtraRunning_2) mImsMmTelManagerExtra_2.onClose();
+                    }
+                }
             }
         }
 	};
@@ -114,6 +145,8 @@ public class MainService extends AccessibilityService {
         mCallRecording.onClose();
         mNfcMonitor.onClose();
         mConnectivityManagerExtra.onClose();
+        mImsMmTelManagerExtra_1.onClose();
+        mImsMmTelManagerExtra_2.onClose();
     }
 
 	@Override
@@ -175,6 +208,15 @@ public class MainService extends AccessibilityService {
 		    if (DEBUG) Log.d(TAG, "Starting the CallRecording service");
 			mCallRecording.onStartup(this);
 		}
+
+        // Start the ImsMmTelManagerExtra service if the user wants VoLTE or VoWiFi icon on status bar
+        boolean shouldWeShowImsIcons = pref.getBoolean("showVolteIcon", false);
+        shouldWeShowImsIcons = shouldWeShowImsIcons || pref.getBoolean("showVowifiIcon", false);
+        if (shouldWeShowImsIcons) {
+            if (DEBUG) Log.d(TAG, "Starting the ImsMmTelManagerExtra service");
+            mImsMmTelManagerExtra_1.onStartup(this, 1);
+            mImsMmTelManagerExtra_2.onStartup(this, 2);
+        }
     }
 
     @Override

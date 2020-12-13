@@ -99,6 +99,23 @@
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			app:iconSpaceReserved="false" />
+
+		<androidx.preference.SwitchPreferenceCompat
+			android:key="showVolteIcon"
+			android:title="Show VoLTE icon on status bar"
+			android:defaultValue="false"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
+		<androidx.preference.SwitchPreferenceCompat
+			android:key="showVowifiIcon"
+			android:title="Show VoWiFi icon on status bar"
+			android:defaultValue="false"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
         </androidx.preference.PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>
