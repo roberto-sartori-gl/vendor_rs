@@ -67,7 +67,6 @@
         </service>
 
     </application>
-    <protected-broadcast android:name="android.service.quicksettings.action.REQUEST_LISTENING" />
 
     <uses-permission android:name="android.permission.READ_PRECISE_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
