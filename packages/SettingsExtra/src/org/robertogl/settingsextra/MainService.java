@@ -57,6 +57,8 @@ public class MainService extends AccessibilityService {
 
     private final NfcStatusMonitor mNfcMonitor = new NfcStatusMonitor();
 
+    private final AdaptiveBrightnessStatusMonitor mAutoBrightenessMonitor = new AdaptiveBrightnessStatusMonitor();
+
     private final BluetoothBatteryIcon mBluetoothBatteryIcon = new BluetoothBatteryIcon();
 
     private final ConnectivityManagerExtra mConnectivityManagerExtra = new ConnectivityManagerExtra();
@@ -144,6 +146,7 @@ public class MainService extends AccessibilityService {
         mBluetoothBatteryIcon.onClose();
         mCallRecording.onClose();
         mNfcMonitor.onClose();
+        mAutoBrightenessMonitor.onClose();
         mConnectivityManagerExtra.onClose();
         mImsMmTelManagerExtra_1.onClose();
         mImsMmTelManagerExtra_2.onClose();
@@ -198,6 +201,9 @@ public class MainService extends AccessibilityService {
 
         // Start the NFC tile monitoring service
         mNfcMonitor.onStartup(this);
+
+        // Start the auto brightness tile monitoring service
+        mAutoBrightenessMonitor.onStartup(this);
 
         // Start the Bluetooth battery icon on the status bar monitoring service
         mBluetoothBatteryIcon.onStartup(this);

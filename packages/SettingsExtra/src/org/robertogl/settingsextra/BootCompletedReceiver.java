@@ -63,14 +63,22 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         else if (displayMode.equals("dcip3"))
             Utils.writeToFile(Utils.displayModeDCIP3Node, "1", deviceProtectedContext);
 
-        // Update the NfcTile with current status
         Handler mainHandler = new Handler(Looper.getMainLooper());
-        Runnable myRunnable = new Runnable() {
+        // Update the NfcTile with current status
+        Runnable nfcRunnable = new Runnable() {
             @Override
             public void run() {
                 NfcTile.requestListeningState(deviceProtectedContext, new ComponentName(deviceProtectedContext, NfcTile.class));
             }
         };
-        mainHandler.post(myRunnable);
+        // Update the AdaptiveBrightnessTile with current status
+        Runnable adaptiveBrightnessRunnable = new Runnable() {
+            @Override
+            public void run() {
+                AdaptiveBrightnessTile.requestListeningState(deviceProtectedContext, new ComponentName(deviceProtectedContext, AdaptiveBrightnessTile.class));
+            }
+        };
+        mainHandler.post(nfcRunnable);
+        mainHandler.post(adaptiveBrightnessRunnable);
     }
 }

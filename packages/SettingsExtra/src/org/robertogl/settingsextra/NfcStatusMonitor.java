@@ -6,8 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
+import android.util.Log;
 
 public class NfcStatusMonitor {
+
+    private final static String TAG = "NfcStatusMonitorTile";
+
+    private final static boolean DEBUG = MainService.DEBUG;
 
     private Context mContext;
 
@@ -30,6 +35,7 @@ public class NfcStatusMonitor {
     };
 
     protected void onStartup(Context context) {
+        if (DEBUG) Log.d(TAG, "Starting");
         mContext = context;
         // Listen for NFC events (ON/OFF)
         IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
