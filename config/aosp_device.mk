@@ -13,3 +13,5 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
     messaging
+
+PRODUCT_ENFORCE_RRO_TARGETS := framework-res
