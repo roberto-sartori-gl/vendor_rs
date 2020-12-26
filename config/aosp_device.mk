@@ -15,3 +15,5 @@ PRODUCT_PACKAGES += \
     messaging
 
 PRODUCT_ENFORCE_RRO_TARGETS := framework-res
+
+PRODUCT_VENDOR_KERNEL_HEADERS := device/oneplus/cheeseburger/kernel-headers
