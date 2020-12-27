@@ -24,6 +24,7 @@ LOCAL_SDK_VERSION := current
 
 LOCAL_OVERRIDES_PACKAGES := \
     Doze \
+    OneplusPocketMode \
     vendor.lineage.livedisplay@2.0-service.oneplus_msm8998 \
     vendor.lineage.touch@1.0-service.oneplus_msm8998
 
