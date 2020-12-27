@@ -47,6 +47,8 @@ public final class Utils {
 
     protected static String flickerFreeMinBrightness = "/proc/flicker_free/flicker_free";
 
+    protected static String doubleTapToWakeNode = "/proc/touchpanel/double_tap_enable";
+
     protected static String readFromFile(String path) {
         String aBuffer = "";
         try {

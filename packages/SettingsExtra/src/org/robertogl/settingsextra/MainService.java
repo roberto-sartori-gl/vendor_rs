@@ -49,6 +49,8 @@ public class MainService extends AccessibilityService {
 
     private static int clickToShutdown = 0;
 
+    private boolean doubleTapToWakeEnabled = false;
+
     private Context mContext;
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
@@ -65,6 +67,8 @@ public class MainService extends AccessibilityService {
 
     private final ImsMmTelManagerExtra mImsMmTelManagerExtra_1 = new ImsMmTelManagerExtra();
     private final ImsMmTelManagerExtra mImsMmTelManagerExtra_2 = new ImsMmTelManagerExtra();
+
+    private final PocketModeService mPocketModeService = new PocketModeService();
 
     private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -135,6 +139,10 @@ public class MainService extends AccessibilityService {
                         if (isImsMmTelManagerExtraRunning_2) mImsMmTelManagerExtra_2.onClose();
                     }
                 }
+                case "pocketModeEnabled":
+                    if (DEBUG) Log.d(TAG, "Settings for PocketMode changed");
+                    boolean isPocketModeEnabled = prefs.getBoolean("pocketModeEnabled", false);
+                    if (isPocketModeEnabled) mPocketModeService.ProximitySensor(mContext);
             }
         }
     };
@@ -223,6 +231,12 @@ public class MainService extends AccessibilityService {
             mImsMmTelManagerExtra_1.onStartup(this, 1);
             mImsMmTelManagerExtra_2.onStartup(this, 2);
         }
+
+        // Setup the PocketMode service if the user wants it
+        boolean isPocketModeEnabled = pref.getBoolean("pocketModeEnabled", false);
+        if (isPocketModeEnabled) {
+            mPocketModeService.ProximitySensor(mContext);
+        }
     }
 
     @Override
@@ -241,6 +255,9 @@ public class MainService extends AccessibilityService {
     private final BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
+            SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+            boolean isPocketModeEnabled = pref.getBoolean("pocketModeEnabled", false);
             switch (intent.getAction()) {
                 case Intent.ACTION_SCREEN_OFF:
                     if (DEBUG) Log.d(TAG, "Screen OFF");
@@ -250,11 +267,13 @@ public class MainService extends AccessibilityService {
                     if (Utils.isAlwaysOnDisplayEnabled(mContext))
                         Utils.writeToFile(Utils.dozeWakeupNode, "1", mContext);
                     Utils.setProp("sys.button_backlight.on", "false");
+                    if (isPocketModeEnabled) mPocketModeService.enable();
                     break;
                 case Intent.ACTION_SCREEN_ON:
                     if (DEBUG) Log.d(TAG, "Screen ON");
                     if (Utils.isAlwaysOnDisplayEnabled(mContext))
                         Utils.writeToFile(Utils.dozeWakeupNode, "0", mContext);
+                    if (isPocketModeEnabled) mPocketModeService.disable();
                     break;
             }
         }
