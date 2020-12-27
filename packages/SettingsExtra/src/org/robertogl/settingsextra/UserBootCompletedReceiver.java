@@ -1,0 +1,42 @@
+package org.robertogl.settingsextra;
+
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+
+public class UserBootCompletedReceiver extends BroadcastReceiver {
+
+    private static final String TAG = "SettingsExtraUserBootReceiver";
+
+    private boolean DEBUG = MainService.DEBUG;
+
+    @Override
+    public void onReceive(final Context context, Intent intent) {
+        if (DEBUG) Log.d(TAG, "Starting SettingsExtraUserBootReceiver");
+        Context deviceProtectedContext = context.createDeviceProtectedStorageContext();
+
+        Handler NfcHandler = new Handler(Looper.getMainLooper());
+        // Update the NfcTile with current status
+        Runnable nfcRunnable = new Runnable() {
+            @Override
+            public void run() {
+                NfcTile.requestListeningState(deviceProtectedContext, new ComponentName(deviceProtectedContext, NfcTile.class));
+            }
+        };
+        NfcHandler.post(nfcRunnable);
+
+        Handler AdaptiveBrightnessHandler = new Handler(Looper.getMainLooper());
+        // Update the AdaptiveBrightnessTile with current status
+        Runnable adaptiveBrightnessRunnable = new Runnable() {
+            @Override
+            public void run() {
+                AdaptiveBrightnessTile.requestListeningState(deviceProtectedContext, new ComponentName(deviceProtectedContext, AdaptiveBrightnessTile.class));
+            }
+        };
+        AdaptiveBrightnessHandler.post(adaptiveBrightnessRunnable);
+    }
+}
