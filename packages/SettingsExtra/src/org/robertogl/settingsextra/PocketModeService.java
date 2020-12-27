@@ -31,13 +31,16 @@ import java.io.IOException;
 
 public class PocketModeService implements SensorEventListener {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = MainService.DEBUG;
     private static final String TAG = "PocketModeProximity";
 
     private static final String CHEESEBURGER_FILE =
             "/sys/devices/soc/soc:fpc_fpc1020/proximity_state";
     private static final String DUMPLING_FILE =
             "/sys/devices/soc/soc:goodix_fp/proximity_state";
+
+    private static final String CHEESEBURGER_TOUCH_FILE =
+            "/proc/touchpanel/proximity_state";
 
     private String FPC_FILE = "";
 
@@ -71,6 +74,7 @@ public class PocketModeService implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        if (DEBUG) Log.d(TAG, "onSensorChanged");
         setFPProximityState(event.values[0] < mSensor.getMaximumRange());
     }
 
@@ -82,8 +86,12 @@ public class PocketModeService implements SensorEventListener {
     private void setFPProximityState(boolean isNear) {
         if (isFileWritable(FPC_FILE)) {
             writeLine(FPC_FILE, isNear ? "1" : "0");
-            if (doubleTapToWakeEnabled && isNear) Utils.writeToFile(Utils.doubleTapToWakeNode, "0", mContext);
-            if (doubleTapToWakeEnabled && !isNear) Utils.writeToFile(Utils.doubleTapToWakeNode, "1", mContext);
+            if (DEBUG) Log.d(TAG, "doubleTapToWakeEnabled: " + doubleTapToWakeEnabled);
+            if (doubleTapToWakeEnabled && isNear) {
+                Utils.writeToFile(CHEESEBURGER_TOUCH_FILE, "1", mContext);
+            } else if (doubleTapToWakeEnabled && !isNear) {
+                Utils.writeToFile(CHEESEBURGER_TOUCH_FILE, "0", mContext);
+            }
         } else {
             Log.e(TAG, "Proximity state file " + FPC_FILE + " is not writable!");
         }
