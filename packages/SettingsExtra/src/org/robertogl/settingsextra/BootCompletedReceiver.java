@@ -35,8 +35,18 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         // Always enable the MainService at boot: we need it
         // It should be necessary only at first boot, but in case we change the AccessibilityService name
         // or the user disable it, just enable it again after the boot
-        Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, package_name + "/" + package_name + AccessibilityService);
+        String MainServiceString = package_name + "/" + package_name + AccessibilityService;
+        String currentServices = Settings.Secure.getString(deviceProtectedContext.getContentResolver(),
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        if (currentServices != null && !currentServices.isEmpty()) {
+            if (!currentServices.contains(MainServiceString)) {
+                Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
+                        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, currentServices + ":" + MainServiceString);
+            }
+        } else {
+            Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
+                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, MainServiceString);
+        }
         Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_ENABLED, "1");
 
