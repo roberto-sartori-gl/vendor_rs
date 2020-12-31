@@ -134,4 +134,9 @@ public final class Utils {
             Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", currentBlackList + "," + unWantedIcon);
         }
     }
+
+    protected static void setHeadsUpNotification(String value, Context context){
+        Settings.Global.putString(context.getContentResolver(),
+                Settings.Global.HEADS_UP_NOTIFICATIONS_ENABLED, value);
+    }
 }

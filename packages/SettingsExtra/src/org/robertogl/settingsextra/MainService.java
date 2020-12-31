@@ -143,6 +143,11 @@ public class MainService extends AccessibilityService {
                     if (DEBUG) Log.d(TAG, "Settings for PocketMode changed");
                     boolean isPocketModeEnabled = prefs.getBoolean("pocketModeEnabled", false);
                     if (isPocketModeEnabled) mPocketModeService.ProximitySensor(mContext);
+                case "headsUpNotificationsEnabled":
+                    if (DEBUG) Log.d(TAG, "Settings for Heads Up notifications changed");
+                    boolean areHeadsUpEnabled = prefs.getBoolean("headsUpNotificationsEnabled", true);
+                    if (areHeadsUpEnabled) Utils.setHeadsUpNotification("1", mContext);
+                    else Utils.setHeadsUpNotification("0", mContext);
             }
         }
     };
@@ -237,6 +242,11 @@ public class MainService extends AccessibilityService {
         if (isPocketModeEnabled) {
             mPocketModeService.ProximitySensor(mContext);
         }
+
+        // Check if Heads Up notification should be enabled
+        boolean areHeadsUpEnabled = pref.getBoolean("headsUpNotificationsEnabled", true);
+        if (areHeadsUpEnabled) Utils.setHeadsUpNotification("1", mContext);
+        else Utils.setHeadsUpNotification("0", mContext);
     }
 
     @Override
