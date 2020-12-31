@@ -42,14 +42,9 @@ public class MainService extends AccessibilityService {
 
     private static final String TriStatePath = "/sys/devices/virtual/switch/tri-state-key/state";
 
-    private boolean wasScreenOff = true;
-
-    private long currentEventTime = 0;
-    private long previousEventTime = 0;
+    private boolean wasScreenOff = false;
 
     private static int clickToShutdown = 0;
-
-    private boolean doubleTapToWakeEnabled = false;
 
     private Context mContext;
     private AudioManager mAudioManager;
@@ -271,6 +266,8 @@ public class MainService extends AccessibilityService {
             switch (intent.getAction()) {
                 case Intent.ACTION_SCREEN_OFF:
                     if (DEBUG) Log.d(TAG, "Screen OFF");
+                    // Set the variable for the slider keys
+                    wasScreenOff = true;
                     clickToShutdown = 0;
                     if (DEBUG)
                         Log.d(TAG, "Always On Display is: " + Utils.isAlwaysOnDisplayEnabled(mContext));
@@ -281,6 +278,12 @@ public class MainService extends AccessibilityService {
                     break;
                 case Intent.ACTION_SCREEN_ON:
                     if (DEBUG) Log.d(TAG, "Screen ON");
+                    // Set the variable for the slider keys
+                    // Wait 250ms to actually check if the screen is on to avoid issues
+                    Handler handler = new Handler(Looper.myLooper());
+                    handler.postDelayed(() -> {
+                        if (Utils.isScreenOn(mContext)) wasScreenOff = false;
+                    }, 250);
                     if (Utils.isAlwaysOnDisplayEnabled(mContext))
                         Utils.writeToFile(Utils.dozeWakeupNode, "0", mContext);
                     if (isPocketModeEnabled) mPocketModeService.disable();
@@ -293,22 +296,10 @@ public class MainService extends AccessibilityService {
         PowerManager manager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         int scanCode = event.getScanCode();
         if (DEBUG) Log.d(TAG, "key event detected: " + scanCode);
-        long msPreviousEventMaxDistance = 1000;
-        if (previousEventTime == 0)
-            previousEventTime = System.currentTimeMillis() - msPreviousEventMaxDistance - 1;
-        if (currentEventTime == 0) currentEventTime = System.currentTimeMillis();
         switch (scanCode) {
             case MODE_NORMAL:
-                if (!Utils.isScreenOn(mContext)) {
-                    previousEventTime = System.currentTimeMillis();
-                    wasScreenOff = true;
-                }
-                currentEventTime = System.currentTimeMillis();
-                if (currentEventTime - previousEventTime > msPreviousEventMaxDistance)
-                    wasScreenOff = false;
                 if (wasScreenOff) {
                     manager.goToSleep(SystemClock.uptimeMillis());
-                    previousEventTime = System.currentTimeMillis();
                 }
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL) {
                     mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
@@ -316,16 +307,8 @@ public class MainService extends AccessibilityService {
                 }
                 return true;
             case MODE_VIBRATION:
-                if (!Utils.isScreenOn(mContext)) {
-                    previousEventTime = System.currentTimeMillis();
-                    wasScreenOff = true;
-                }
-                currentEventTime = System.currentTimeMillis();
-                if (currentEventTime - previousEventTime > msPreviousEventMaxDistance)
-                    wasScreenOff = false;
                 if (wasScreenOff) {
                     manager.goToSleep(SystemClock.uptimeMillis());
-                    previousEventTime = System.currentTimeMillis();
                 }
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE) {
                     mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
@@ -334,16 +317,8 @@ public class MainService extends AccessibilityService {
                 }
                 return true;
             case MODE_SILENCE:
-                if (!Utils.isScreenOn(mContext)) {
-                    previousEventTime = System.currentTimeMillis();
-                    wasScreenOff = true;
-                }
-                currentEventTime = System.currentTimeMillis();
-                if (currentEventTime - previousEventTime > msPreviousEventMaxDistance)
-                    wasScreenOff = false;
                 if (wasScreenOff) {
                     manager.goToSleep(SystemClock.uptimeMillis());
-                    previousEventTime = System.currentTimeMillis();
                 }
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT) {
                     mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
