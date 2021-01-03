@@ -24,3 +24,7 @@ PRODUCT_VENDOR_KERNEL_HEADERS := device/oneplus/cheeseburger/kernel-headers
 
 PRODUCT_SOONG_NAMESPACES += \
     vendor/qcom/opensource/data-ipa-cfg-mgr
+
+# Camera API1 ZSL
+PRODUCT_PROPERTY_OVERRIDES += \
+    camera.disable_zsl_mode=1
