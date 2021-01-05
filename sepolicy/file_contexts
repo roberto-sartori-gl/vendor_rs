@@ -1,1 +1,3 @@
 /sys/devices/virtual/switch/tri-state-key/state                                         u:object_r:sysfs_tri_state:s0
+# tri-state-key
+/system/bin/tri-state-key_daemon          u:object_r:tri-state-key_daemon_exec:s0
