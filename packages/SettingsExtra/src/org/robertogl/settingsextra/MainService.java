@@ -25,7 +25,7 @@ public class MainService extends AccessibilityService {
 
     protected static final boolean DEBUG = false;
 
-    // Slider key codes
+    // KeyCodes
     private static final int MODE_NORMAL = 603;
     private static final int MODE_VIBRATION = 602;
     private static final int MODE_SILENCE = 601;
@@ -41,8 +41,6 @@ public class MainService extends AccessibilityService {
     private long msDoubleClick = 0;
 
     private static final String TriStatePath = "/sys/devices/virtual/switch/tri-state-key/state";
-
-    private boolean wasScreenOff = false;
 
     private static int clickToShutdown = 0;
 
@@ -192,6 +190,10 @@ public class MainService extends AccessibilityService {
             mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
         }
 
+        // Register to the tri-state-events
+        IntentFilter filter = new IntentFilter("com.oneplus.TRI_STATE_EVENT");
+        registerReceiver(mTriStateReceiver,filter);
+
         // Register here to get the SCREEN_OFF event
         // Used to turn off the capacitive buttons backlight
         IntentFilter screenActionFilter = new IntentFilter();
@@ -257,6 +259,29 @@ public class MainService extends AccessibilityService {
         return handleKeyEvent(event);
     }
 
+    private final BroadcastReceiver mTriStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int tristate = Integer.parseInt(Utils.readFromFile(TriStatePath));
+            if (DEBUG) Log.d(TAG, "Tri Key state: " + tristate);
+            if (tristate == 1 && (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT)) {
+                // Silent mode
+                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
+                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
+                Utils.doHapticFeedback(mVibrator, msSilentVibrationLength);
+            } else if (tristate == 2 && (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE)) {
+                // Vibration mode
+                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
+                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
+                Utils.doHapticFeedback(mVibrator, msVibrateVibrationLength);
+            } else if (tristate == 3 && (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL)) {
+                // Normal mode
+                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
+                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
+            }
+        }
+    };
+
     private final BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -267,7 +292,6 @@ public class MainService extends AccessibilityService {
                 case Intent.ACTION_SCREEN_OFF:
                     if (DEBUG) Log.d(TAG, "Screen OFF");
                     // Set the variable for the slider keys
-                    wasScreenOff = true;
                     clickToShutdown = 0;
                     if (DEBUG)
                         Log.d(TAG, "Always On Display is: " + Utils.isAlwaysOnDisplayEnabled(mContext));
@@ -278,12 +302,6 @@ public class MainService extends AccessibilityService {
                     break;
                 case Intent.ACTION_SCREEN_ON:
                     if (DEBUG) Log.d(TAG, "Screen ON");
-                    // Set the variable for the slider keys
-                    // Wait 250ms to actually check if the screen is on to avoid issues
-                    Handler handler = new Handler(Looper.myLooper());
-                    handler.postDelayed(() -> {
-                        if (Utils.isScreenOn(mContext)) wasScreenOff = false;
-                    }, 250);
                     if (Utils.isAlwaysOnDisplayEnabled(mContext))
                         Utils.writeToFile(Utils.dozeWakeupNode, "0", mContext);
                     if (isPocketModeEnabled) mPocketModeService.disable();
@@ -298,18 +316,12 @@ public class MainService extends AccessibilityService {
         if (DEBUG) Log.d(TAG, "key event detected: " + scanCode);
         switch (scanCode) {
             case MODE_NORMAL:
-                if (wasScreenOff) {
-                    manager.goToSleep(SystemClock.uptimeMillis());
-                }
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL) {
                     mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
                     mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
                 }
                 return true;
             case MODE_VIBRATION:
-                if (wasScreenOff) {
-                    manager.goToSleep(SystemClock.uptimeMillis());
-                }
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE) {
                     mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
                     mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
@@ -317,9 +329,6 @@ public class MainService extends AccessibilityService {
                 }
                 return true;
             case MODE_SILENCE:
-                if (wasScreenOff) {
-                    manager.goToSleep(SystemClock.uptimeMillis());
-                }
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT) {
                     mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
                     mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
