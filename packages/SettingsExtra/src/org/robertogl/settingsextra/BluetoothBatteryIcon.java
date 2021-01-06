@@ -118,12 +118,13 @@ public class BluetoothBatteryIcon {
                 if (mBluetoothBatteryConnectedAddress.contains(device.getAddress()))
                     mBluetoothBatteryConnectedAddress.remove(device.getAddress());
                 bluetoothDeviceConnected -= 1;
-                if (bluetoothDeviceConnected == 0) {
+                if (bluetoothDeviceConnected <= 0) {
                     if (DEBUG) Log.d(TAG, "bluetooth devices all disconnected");
                     mBluetoothBatteryConnectedAddress.clear();
                     mStatusBarManager.setIconVisibility("bluetooth_extra", false);
                     mStatusBarManager.removeIcon("bluetooth_extra");
                     isBluetoothOff = true;
+                    bluetoothDeviceConnected = 0;
                 } else if (mBluetoothBatteryConnectedAddress.size() > 0) {
                     if (DEBUG) Log.d(TAG, "bluetooth devices with battery are still connected");
                     isBluetoothOff = false;
