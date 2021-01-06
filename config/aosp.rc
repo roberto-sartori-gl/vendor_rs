@@ -1,0 +1,20 @@
+service slider_up /system/bin/sh /system/bin/tri-state-key_event
+    keycodes 601
+    oneshot
+    timeout_period 2
+    seclabel u:r:tri-state-key_event:s0
+    disabled
+
+service slider_middle /system/bin/sh /system/bin/tri-state-key_event
+    keycodes 602
+    oneshot
+    timeout_period 2
+    seclabel u:r:tri-state-key_event:s0
+    disabled
+
+service slider_down /system/bin/sh /system/bin/tri-state-key_event
+    keycodes 603
+    oneshot
+    timeout_period 2
+    seclabel u:r:tri-state-key_event:s0
+    disabled

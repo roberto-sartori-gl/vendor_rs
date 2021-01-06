@@ -1,0 +1,2 @@
+#!/system/bin/sh
+am broadcast -a com.oneplus.TRI_STATE_EVENT

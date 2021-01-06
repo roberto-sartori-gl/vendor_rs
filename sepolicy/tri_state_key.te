@@ -4,17 +4,17 @@ type sysfs_tri_state, fs_type, sysfs_type;
 # Allow system apps to access the Tri State Key state
 allow system_app sysfs_tri_state:file { getattr open read };
 
-type tri-state-key_daemon, domain, coredomain;
-type tri-state-key_daemon_exec, system_file_type, exec_type, file_type;
+type tri-state-key_event, domain, coredomain;
+type tri-state-key_event_exec, system_file_type, exec_type, file_type;
 
-init_daemon_domain(tri-state-key_daemon)
+init_daemon_domain(tri-state-key_event)
 
-allow tri-state-key_daemon uhid_device:chr_file rw_file_perms;
-allow tri-state-key_daemon self:netlink_kobject_uevent_socket create_socket_perms_no_ioctl;
-allow tri-state-key_daemon shell_exec:file { execute read open getattr execute_no_trans };
-allow tri-state-key_daemon system_file:file execute_no_trans;
-allow tri-state-key_daemon servicemanager:binder call;
-allow tri-state-key_daemon activity_service:service_manager find;
-allow tri-state-key_daemon system_server:binder { call transfer };
+allow tri-state-key_event uhid_device:chr_file rw_file_perms;
+allow tri-state-key_event self:netlink_kobject_uevent_socket create_socket_perms_no_ioctl;
+allow tri-state-key_event shell_exec:file { execute read open getattr execute_no_trans entrypoint };
+allow tri-state-key_event system_file:file execute_no_trans;
+allow tri-state-key_event servicemanager:binder call;
+allow tri-state-key_event activity_service:service_manager find;
+allow tri-state-key_event system_server:binder { call transfer };
 
-allow system_server tri-state-key_daemon:binder call;
+allow system_server tri-state-key_event:binder call;

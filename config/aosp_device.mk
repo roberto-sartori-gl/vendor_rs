@@ -18,10 +18,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     PackagesRemover
 
-# Tri-state-key
-PRODUCT_PACKAGES += \
-    tri-state-key_daemon
-
 PRODUCT_ENFORCE_RRO_TARGETS := framework-res
 
 PRODUCT_VENDOR_KERNEL_HEADERS := device/oneplus/cheeseburger/kernel-headers
@@ -32,3 +28,11 @@ PRODUCT_SOONG_NAMESPACES += \
 # Camera API1 ZSL
 PRODUCT_PROPERTY_OVERRIDES += \
     camera.disable_zsl_mode=1
+
+# Custom .rc file
+PRODUCT_COPY_FILES += \
+    vendor/rs/config/aosp.rc:system/etc/init/aosp.rc
+
+# Slider key events monitor service
+PRODUCT_COPY_FILES += \
+    vendor/rs/config/tri-state/tri-state-key_event:system/bin/tri-state-key_event
