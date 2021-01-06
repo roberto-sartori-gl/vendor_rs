@@ -35,4 +35,6 @@ PRODUCT_COPY_FILES += \
 
 # Slider key events monitor service
 PRODUCT_COPY_FILES += \
-    vendor/rs/config/tri-state/tri-state-key_event:system/bin/tri-state-key_event
+    vendor/rs/config/tri-state/tri-state-key_event_up:system/bin/tri-state-key_event_up \
+    vendor/rs/config/tri-state/tri-state-key_event_middle:system/bin/tri-state-key_event_middle \
+    vendor/rs/config/tri-state/tri-state-key_event_down:system/bin/tri-state-key_event_down

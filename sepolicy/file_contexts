@@ -1,3 +1,5 @@
 /sys/devices/virtual/switch/tri-state-key/state                                         u:object_r:sysfs_tri_state:s0
 # tri-state-key
-/system/bin/tri-state-key_event          u:object_r:tri-state-key_event_exec:s0
+/system/bin/tri-state-key_event_up          u:object_r:tri-state-key_event_exec:s0
+/system/bin/tri-state-key_event_middle      u:object_r:tri-state-key_event_exec:s0
+/system/bin/tri-state-key_event_down        u:object_r:tri-state-key_event_exec:s0

@@ -9,12 +9,12 @@ type tri-state-key_event_exec, system_file_type, exec_type, file_type;
 
 init_daemon_domain(tri-state-key_event)
 
-allow tri-state-key_event uhid_device:chr_file rw_file_perms;
-allow tri-state-key_event self:netlink_kobject_uevent_socket create_socket_perms_no_ioctl;
 allow tri-state-key_event shell_exec:file { execute read open getattr execute_no_trans entrypoint };
 allow tri-state-key_event system_file:file execute_no_trans;
 allow tri-state-key_event servicemanager:binder call;
-allow tri-state-key_event activity_service:service_manager find;
-allow tri-state-key_event system_server:binder { call transfer };
-
-allow system_server tri-state-key_event:binder call;
+allow tri-state-key_event system_server:binder { call };
+allow tri-state-key_event audio_service:service_manager find;
+allow tri-state-key_event toolbox_exec:file { getattr execute read open execute_no_trans };
+allow tri-state-key_event system_prop:property_service set;
+allow tri-state-key_event property_socket:sock_file write;
+allow tri-state-key_event init:unix_stream_socket connectto;

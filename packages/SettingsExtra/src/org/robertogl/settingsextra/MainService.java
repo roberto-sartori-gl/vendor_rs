@@ -26,16 +26,9 @@ public class MainService extends AccessibilityService {
     protected static final boolean DEBUG = false;
 
     // KeyCodes
-    private static final int MODE_NORMAL = 603;
-    private static final int MODE_VIBRATION = 602;
-    private static final int MODE_SILENCE = 601;
     private static final int KEYCODE_APP_SELECT = 580;
     private static final int KEYCODE_BACK = 158;
     private static final int KEYCODE_F4 = 62;
-
-    // Vibration duration in ms
-    private static final int msSilentVibrationLength = 300;
-    private static final int msVibrateVibrationLength = 200;
 
     private static final int msDoubleClickThreshold = 250;
     private long msDoubleClick = 0;
@@ -46,7 +39,6 @@ public class MainService extends AccessibilityService {
 
     private Context mContext;
     private AudioManager mAudioManager;
-    private Vibrator mVibrator;
 
     private final CallRecording mCallRecording = new CallRecording();
 
@@ -164,7 +156,6 @@ public class MainService extends AccessibilityService {
         if (DEBUG) Log.d(TAG, "service is connected");
         mContext = this;
         mAudioManager = mContext.getSystemService(AudioManager.class);
-        mVibrator = mContext.getSystemService(Vibrator.class);
 
         Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
         SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
@@ -189,10 +180,6 @@ public class MainService extends AccessibilityService {
             mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
             mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
         }
-
-        // Register to the tri-state-events
-        IntentFilter filter = new IntentFilter("com.oneplus.TRI_STATE_EVENT");
-        registerReceiver(mTriStateReceiver,filter);
 
         // Register here to get the SCREEN_OFF event
         // Used to turn off the capacitive buttons backlight
@@ -259,29 +246,6 @@ public class MainService extends AccessibilityService {
         return handleKeyEvent(event);
     }
 
-    private final BroadcastReceiver mTriStateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int tristate = Integer.parseInt(Utils.readFromFile(TriStatePath));
-            if (DEBUG) Log.d(TAG, "Tri Key state: " + tristate);
-            if (tristate == 1 && (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT)) {
-                // Silent mode
-                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
-                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
-                Utils.doHapticFeedback(mVibrator, msSilentVibrationLength);
-            } else if (tristate == 2 && (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE)) {
-                // Vibration mode
-                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
-                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
-                Utils.doHapticFeedback(mVibrator, msVibrateVibrationLength);
-            } else if (tristate == 3 && (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL)) {
-                // Normal mode
-                mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
-                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
-            }
-        }
-    };
-
     private final BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -315,26 +279,6 @@ public class MainService extends AccessibilityService {
         int scanCode = event.getScanCode();
         if (DEBUG) Log.d(TAG, "key event detected: " + scanCode);
         switch (scanCode) {
-            case MODE_NORMAL:
-                if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL) {
-                    mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
-                    mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
-                }
-                return true;
-            case MODE_VIBRATION:
-                if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE) {
-                    mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
-                    mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
-                    Utils.doHapticFeedback(mVibrator, msVibrateVibrationLength);
-                }
-                return true;
-            case MODE_SILENCE:
-                if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT) {
-                    mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
-                    mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
-                    Utils.doHapticFeedback(mVibrator, msSilentVibrationLength);
-                }
-                return true;
             case KEYCODE_BACK:
             case KEYCODE_APP_SELECT:
                 if (event.getAction() == 0) {

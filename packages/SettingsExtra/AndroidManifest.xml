@@ -106,7 +106,5 @@
         android:minSdkVersion="30"
         android:targetSdkVersion="30" />
 
-    <protected-broadcast android:name="com.oneplus.TRI_STATE_EVENT" />
-
 </manifest>
 
