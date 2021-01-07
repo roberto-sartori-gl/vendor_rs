@@ -3,3 +3,6 @@ ro.build.fingerprint=OnePlus/OnePlus5/OnePlus5:8.1.0/OPM1.171019.011/04110400:us
 # SurfaceFlinger
 ro.sf.blurs_are_expensive=1
 ro.surface_flinger.supports_background_blur=1
+
+# Safe volume level warning
+audio.safemedia.bypass=true
