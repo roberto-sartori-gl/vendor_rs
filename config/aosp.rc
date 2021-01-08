@@ -3,6 +3,7 @@ service slider_up /system/bin/sh /system/bin/tri-state-key_event_up
     oneshot
     timeout_period 2
     priority 19
+    ioprio rt 5
     seclabel u:r:tri-state-key_event:s0
     disabled
 
@@ -11,6 +12,7 @@ service slider_middle /system/bin/sh /system/bin/tri-state-key_event_middle
     oneshot
     timeout_period 2
     priority 19
+    ioprio rt 5
     seclabel u:r:tri-state-key_event:s0
     disabled
 
@@ -19,9 +21,14 @@ service slider_down /system/bin/sh /system/bin/tri-state-key_event_down
     oneshot
     timeout_period 2
     priority 19
+    ioprio rt 5
     seclabel u:r:tri-state-key_event:s0
     disabled
 
 on property:sys.slider_up.vibrate=1
     write /sys/devices/virtual/timed_output/vibrator/enable 300
     setprop sys.slider_up.vibrate ""
+
+on property:sys.slider_middle.vibrate=1
+    write /sys/devices/virtual/timed_output/vibrator/enable 200
+    setprop sys.slider_middle.vibrate ""
