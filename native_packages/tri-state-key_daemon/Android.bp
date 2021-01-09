@@ -18,7 +18,6 @@ cc_binary {
     init_rc: ["tri-state-key_daemon.rc"],
     srcs: [
         "main.cpp",
-        "uevent_listener.cpp",
     ],
     cppflags: [
         "-Wall",

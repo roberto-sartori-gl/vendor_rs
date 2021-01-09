@@ -17,4 +17,8 @@ allow tri-state-key_daemon servicemanager:binder call;
 allow tri-state-key_daemon activity_service:service_manager find;
 allow tri-state-key_daemon system_server:binder { call transfer };
 
+allow tri-state-key_daemon input_device:dir search;
+allow tri-state-key_daemon input_device:chr_file read;
+allow tri-state-key_daemon sysfs:dir { open read };
+
 allow system_server tri-state-key_daemon:binder call;

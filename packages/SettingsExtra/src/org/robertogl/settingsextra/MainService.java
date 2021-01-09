@@ -266,14 +266,14 @@ public class MainService extends AccessibilityService {
             if (DEBUG) Log.d(TAG, "Tri Key state: " + tristate);
             if (tristate == 1 && (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT)) {
                 // Silent mode
+                Utils.doHapticFeedback(mVibrator, msSilentVibrationLength);
                 mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
                 mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
-                Utils.doHapticFeedback(mVibrator, msSilentVibrationLength);
             } else if (tristate == 2 && (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE)) {
                 // Vibration mode
+                Utils.doHapticFeedback(mVibrator, msVibrateVibrationLength);
                 mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
                 mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
-                Utils.doHapticFeedback(mVibrator, msVibrateVibrationLength);
             } else if (tristate == 3 && (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_NORMAL)) {
                 // Normal mode
                 mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
@@ -323,16 +323,16 @@ public class MainService extends AccessibilityService {
                 return true;
             case MODE_VIBRATION:
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_VIBRATE) {
+                    Utils.doHapticFeedback(mVibrator, msVibrateVibrationLength);
                     mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
                     mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
-                    Utils.doHapticFeedback(mVibrator, msVibrateVibrationLength);
                 }
                 return true;
             case MODE_SILENCE:
                 if (mAudioManager.getRingerModeInternal() != AudioManager.RINGER_MODE_SILENT) {
+                    Utils.doHapticFeedback(mVibrator, msSilentVibrationLength);
                     mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
                     mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_SILENT);
-                    Utils.doHapticFeedback(mVibrator, msSilentVibrationLength);
                 }
                 return true;
             case KEYCODE_BACK:
