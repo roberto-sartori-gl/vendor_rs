@@ -19,20 +19,54 @@
 #include <linux/input.h>
 #include <linux/uinput.h>
 #include <unistd.h>
+#include <iostream>
+#include <fstream>
+#include <string>
 #include "uevent_listener.h"
 
 using android::Uevent;
 using android::UeventListener;
-int main() {
+int main()
+{
     UeventListener uevent_listener;
     LOG(DEBUG) << "Started";
-    uevent_listener.Poll([](const Uevent& uevent) {
+    uevent_listener.Poll([](const Uevent &uevent) {
+        if (uevent.action == "change" && uevent.path == "/devices/virtual/switch/tri-state-key")
+        {
+            LOG(DEBUG) << "tri-state-key event detected";
+            std::string line;
+            int state = 0;
+            std::ifstream keystate_node("/sys/devices/virtual/switch/tri-state-key/state");
+            if (keystate_node.is_open())
+            {
+                while (std::getline(keystate_node, line))
+                {
+                    state = std::stoi(line);
+                }
+                keystate_node.close();
+            }
 
-        if (uevent.action == "change" && uevent.path == "/devices/virtual/switch/tri-state-key") {
-            LOG(DEBUG) << "tri-state-key event detected, launching broadcast...";
-            system("am broadcast -a com.oneplus.TRI_STATE_EVENT");
+            if (state == 1)
+            {
+                // Silent mode - slider up
+                system("setprop sys.slider_up.vibrate 1");
+                system("service call audio 9 i32 3 i32 -100 i32 0");
+                system("service call audio 32 i32 0 s16 \"shell\"");
+            }
+            else if (state == 2)
+            {
+                // Vibration mode - slider middle
+                system("setprop sys.slider_middle.vibrate 1");
+                system("service call audio 9 i32 3 i32 100 i32 0");
+                system("service call audio 32 i32 1 s16 \"shell\"");
+            }
+            else if (state == 3)
+            {
+                // Normal mode - slider down
+                system("service call audio 9 i32 3 i32 100 i32 0");
+                system("service call audio 32 i32 2 s16 \"shell\"");
+            }
         }
         return;
     });
 }
-

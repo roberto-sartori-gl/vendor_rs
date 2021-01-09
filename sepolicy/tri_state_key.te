@@ -11,10 +11,19 @@ init_daemon_domain(tri-state-key_daemon)
 
 allow tri-state-key_daemon uhid_device:chr_file rw_file_perms;
 allow tri-state-key_daemon self:netlink_kobject_uevent_socket create_socket_perms_no_ioctl;
-allow tri-state-key_daemon shell_exec:file { execute read open getattr execute_no_trans };
+allow tri-state-key_daemon shell_exec:file { execute read open getattr execute_no_trans entrypoint };
 allow tri-state-key_daemon system_file:file execute_no_trans;
 allow tri-state-key_daemon servicemanager:binder call;
 allow tri-state-key_daemon activity_service:service_manager find;
 allow tri-state-key_daemon system_server:binder { call transfer };
+
+allow tri-state-key_daemon audio_service:service_manager find;
+allow tri-state-key_daemon toolbox_exec:file { getattr execute read open execute_no_trans };
+allow tri-state-key_daemon system_prop:property_service set;
+allow tri-state-key_daemon property_socket:sock_file write;
+allow tri-state-key_daemon init:unix_stream_socket connectto;
+
+allow tri-state-key_daemon sysfs_switch:dir search ;
+allow tri-state-key_daemon sysfs_tri_state:file { getattr open read };
 
 allow system_server tri-state-key_daemon:binder call;

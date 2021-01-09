@@ -1,4 +1,12 @@
 service tri-state-key_daemon /system/bin/tri-state-key_daemon
     class late_start
-    user system
-    group system uhid
+    user root
+    group root uhid
+
+on property:sys.slider_up.vibrate=1
+    write /sys/devices/virtual/timed_output/vibrator/enable 300
+    setprop sys.slider_up.vibrate ""
+
+on property:sys.slider_middle.vibrate=1
+    write /sys/devices/virtual/timed_output/vibrator/enable 200
+    setprop sys.slider_middle.vibrate ""
