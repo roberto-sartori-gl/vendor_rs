@@ -2,6 +2,7 @@ package org.robertogl.settingsextra;
 
 import androidx.preference.PreferenceFragmentCompat;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 import androidx.preference.Preference.OnPreferenceChangeListener;
+import androidx.preference.Preference.OnPreferenceClickListener;
 import androidx.preference.ListPreference;
 import androidx.preference.PreferenceScreen;
 import androidx.preference.PreferenceFragmentCompat;
@@ -76,6 +78,18 @@ public class SettingsExtraFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
+
+        final Preference advancedReboot = getPreferenceScreen().findPreference("advanced_reboot");
+        advancedReboot.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference){
+                if (DEBUG) Log.d(TAG, "Selected Advanced Reboot");
+                AdvancedRebootExtra mAdvancedReboot = new AdvancedRebootExtra();
+                mAdvancedReboot.showAdvancedRebootOptions(getActivity());
+                return true;
+            }
+        });
+
 
     }
 
