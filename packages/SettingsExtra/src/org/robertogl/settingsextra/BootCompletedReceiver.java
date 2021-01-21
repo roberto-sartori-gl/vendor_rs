@@ -1,5 +1,6 @@
 package org.robertogl.settingsextra;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -72,5 +73,14 @@ public class BootCompletedReceiver extends BroadcastReceiver {
             Utils.writeToFile(Utils.displayModeSRGBNode, "1", deviceProtectedContext);
         else if (displayMode.equals("dcip3"))
             Utils.writeToFile(Utils.displayModeDCIP3Node, "1", deviceProtectedContext);
+
+        // Allow the LedLightManager to access notifications
+        String LedServiceString = package_name + "/" + package_name + ".LedLightManager";
+        NotificationManager mNotificationManager = deviceProtectedContext.getSystemService(NotificationManager.class);
+        if (!mNotificationManager.isNotificationListenerAccessGranted(ComponentName.unflattenFromString(LedServiceString))) {
+            if (DEBUG) Log.d(TAG, "Enabling LedLightManager");
+            mNotificationManager.setNotificationListenerAccessGranted(ComponentName.unflattenFromString(LedServiceString), true);
+        }
+
     }
 }

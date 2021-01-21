@@ -20,10 +20,13 @@ import android.content.SharedPreferences;
 
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.sql.Struct;
+
 public class MainService extends AccessibilityService {
     private static final String TAG = "MainService";
 
-    protected static final boolean DEBUG = false;
+    protected static final boolean DEBUG = true;
 
     // KeyCodes
     private static final int KEYCODE_APP_SELECT = 580;
@@ -55,6 +58,8 @@ public class MainService extends AccessibilityService {
     private final ImsMmTelManagerExtra mImsMmTelManagerExtra_2 = new ImsMmTelManagerExtra();
 
     private final PocketModeService mPocketModeService = new PocketModeService();
+
+    private final LedLightManager mLedLightManager = new LedLightManager();
 
     private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -190,6 +195,11 @@ public class MainService extends AccessibilityService {
         screenActionFilter.addAction(Intent.ACTION_SCREEN_ON);
         registerReceiver(mScreenStateReceiver, screenActionFilter);
 
+        // Get the boot completed intent
+        IntentFilter bootCompleted = new IntentFilter();
+        bootCompleted.addAction(Intent.ACTION_USER_UNLOCKED);
+        registerReceiver(mBootCompleted, screenActionFilter);
+
         // Enable the Dynamic Modem if the user enabled it
         boolean dynamicModem = pref.getBoolean("dynamicModem", false);
         if (dynamicModem) {
@@ -233,6 +243,9 @@ public class MainService extends AccessibilityService {
         boolean areHeadsUpEnabled = pref.getBoolean("headsUpNotificationsEnabled", true);
         if (areHeadsUpEnabled) Utils.setHeadsUpNotification("1", mContext);
         else Utils.setHeadsUpNotification("0", mContext);
+
+        //mLedLightManager.onStart();
+
     }
 
     @Override
@@ -247,6 +260,25 @@ public class MainService extends AccessibilityService {
     protected boolean onKeyEvent(KeyEvent event) {
         return handleKeyEvent(event);
     }
+
+    private final BroadcastReceiver mBootCompleted = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (DEBUG) Log.d(TAG, "onBootCompleted");
+            Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
+            SharedPreferences pref = deviceProtectedContext.getSharedPreferences(context.getPackageName() + "_preferences", MODE_PRIVATE);
+            boolean isLedLightManagerEnabled = pref.getBoolean("ledLightManagerEnabled", false);
+            if (isLedLightManagerEnabled) {
+                try {
+                    mLedLightManager.onStartUnlocked();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    mLedLightManager.onClose();
+                }
+
+            }
+        }
+    };
 
     private final BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
         @Override

@@ -14,6 +14,9 @@ import android.hardware.display.DisplayManager;
 import android.view.Display;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -139,4 +142,11 @@ public final class Utils {
         Settings.Global.putString(context.getContentResolver(),
                 Settings.Global.HEADS_UP_NOTIFICATIONS_ENABLED, value);
     }
+
+    public static <T> int[] indexOfMultiple(List<T> list, T object) {
+        return IntStream.range(0, list.size())
+                .filter(i -> Objects.equals(object, list.get(i)))
+                .toArray();
+    }
+
 }
