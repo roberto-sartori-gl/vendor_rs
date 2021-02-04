@@ -90,7 +90,16 @@ public class SettingsExtraFragment extends PreferenceFragmentCompat {
             }
         });
 
-
+        final Preference vibrationIntensity = getPreferenceScreen().findPreference("vibration_settings");
+        vibrationIntensity.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference){
+                if (DEBUG) Log.d(TAG, "Selected Vibration Settings");
+                VibrationExtra mVibrationExtra = new VibrationExtra();
+                mVibrationExtra.showVibrationOptions(getActivity());
+                return true;
+            }
+        });
     }
 
 

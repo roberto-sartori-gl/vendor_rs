@@ -49,6 +49,8 @@ public final class Utils {
 
     protected static String doubleTapToWakeNode = "/proc/touchpanel/double_tap_enable";
 
+    protected static final String vibrationIntensityString = "vibrationIntensityString";
+
     protected static String readFromFile(String path) {
         String aBuffer = "";
         try {
@@ -138,5 +140,12 @@ public final class Utils {
     protected static void setHeadsUpNotification(String value, Context context){
         Settings.Global.putString(context.getContentResolver(),
                 Settings.Global.HEADS_UP_NOTIFICATIONS_ENABLED, value);
+    }
+
+    protected static void setVibrationIntensity(String value, Context context){
+        int max = 3596;
+        int f_value = (max / 100) * Integer.valueOf(value);
+        if (DEBUG) Log.d (TAG, "vibration intensity: " + f_value);
+        writeToFile("/sys/devices/virtual/timed_output/vibrator/vmax_mv", String.valueOf(f_value), context);
     }
 }

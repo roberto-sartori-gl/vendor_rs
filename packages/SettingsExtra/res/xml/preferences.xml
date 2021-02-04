@@ -143,4 +143,12 @@
 
         </androidx.preference.PreferenceCategory>
 
+	<androidx.preference.Preference
+		app:key="vibration_settings"
+		app:summary="Set vibration intensity"
+		app:title="Vibration intensity"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		app:iconSpaceReserved="false" />
+
 </androidx.preference.PreferenceScreen>

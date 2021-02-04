@@ -233,6 +233,10 @@ public class MainService extends AccessibilityService {
         boolean areHeadsUpEnabled = pref.getBoolean("headsUpNotificationsEnabled", true);
         if (areHeadsUpEnabled) Utils.setHeadsUpNotification("1", mContext);
         else Utils.setHeadsUpNotification("0", mContext);
+
+        // Set vibration intensity
+        String vibrationIntensityFloat = pref.getString(Utils.vibrationIntensityString, "58");
+        Utils.setVibrationIntensity(vibrationIntensityFloat, mContext);
     }
 
     @Override
