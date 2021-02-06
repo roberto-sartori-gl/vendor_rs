@@ -1,3 +1,4 @@
 /sys/devices/virtual/switch/tri-state-key/state                                         u:object_r:sysfs_tri_state:s0
 # tri-state-key
-/system/bin/tri-state-key_daemon          u:object_r:tri-state-key_daemon_exec:s0
+/system/bin/tri-state-key_daemon                                                        u:object_r:tri-state-key_daemon_exec:s0
+/vendor/bin/hw/light_daemon                                                             u:object_r:hal_light_default_exec:s0

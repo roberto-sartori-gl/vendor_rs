@@ -1,0 +1,2 @@
+allow hal_light_default exported_system_prop:file { open read getattr };
+allow hal_light_default self:capability sys_resource;

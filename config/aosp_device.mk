@@ -22,6 +22,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     tri-state-key_daemon
 
+# Custom light HAL
+PRODUCT_PACKAGES += \
+    light_daemon
+
 PRODUCT_ENFORCE_RRO_TARGETS := framework-res
 
 PRODUCT_VENDOR_KERNEL_HEADERS := device/oneplus/cheeseburger/kernel-headers

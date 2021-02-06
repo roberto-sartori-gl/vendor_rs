@@ -1,0 +1,6 @@
+service light_daemon /vendor/bin/hw/light_daemon
+    class hal
+    user system
+    group system
+    oneshot
+    disabled
