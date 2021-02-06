@@ -134,6 +134,16 @@ public class MainService extends AccessibilityService {
                     boolean areHeadsUpEnabled = prefs.getBoolean("headsUpNotificationsEnabled", true);
                     if (areHeadsUpEnabled) Utils.setHeadsUpNotification("1", mContext);
                     else Utils.setHeadsUpNotification("0", mContext);
+                case "ledManagerExtraEnabled":
+                    if (DEBUG) Log.d(TAG, "Settings for Led Manager changed");
+                    boolean isLedManagerEnabled = prefs.getBoolean("ledManagerExtraEnabled", false);
+                    if (isLedManagerEnabled) {
+                        if (DEBUG) Log.d(TAG, "Enabling Led Manager Extra");
+                        Utils.setProp("persist.sys.disable.rgb", "1");
+                    } else {
+                        if (DEBUG) Log.d(TAG, "Disabling Led Manager Extra");
+                        Utils.setProp("persist.sys.disable.rgb", "0");
+                    }
             }
         }
     };
@@ -237,6 +247,14 @@ public class MainService extends AccessibilityService {
         // Set vibration intensity
         String vibrationIntensityFloat = pref.getString(Utils.vibrationIntensityString, "58");
         Utils.setVibrationIntensity(vibrationIntensityFloat, mContext);
+
+        // Enable the Led Manager service if needed
+        boolean isLedManagerEnabled = pref.getBoolean("ledManagerExtraEnabled", false);
+        if (isLedManagerEnabled) {
+            Utils.setProp("persist.sys.disable.rgb", "1");
+        } else {
+            Utils.setProp("persist.sys.disable.rgb", "");
+        }
     }
 
     @Override

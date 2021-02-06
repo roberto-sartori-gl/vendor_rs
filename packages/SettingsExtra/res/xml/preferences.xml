@@ -141,12 +141,30 @@
 			app:allowDividerBelow="true"
 			app:iconSpaceReserved="false" />
 
+		<androidx.preference.SwitchPreferenceCompat
+			android:key="ledLightManagerEnabled"
+			android:title="Enable Led Light Manager"
+			android:defaultValue="false"
+			app:persistent="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
         </androidx.preference.PreferenceCategory>
 
 	<androidx.preference.Preference
 		app:key="vibration_settings"
 		app:summary="Set vibration intensity"
 		app:title="Vibration intensity"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		app:iconSpaceReserved="false" />
+
+	<androidx.preference.SwitchPreferenceCompat
+		android:key="ledManagerExtraEnabled"
+		android:title="Enable Custom Led Manager (BETA)"
+		android:defaultValue="false"
+		app:summary="See XDA for details"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		app:iconSpaceReserved="false" />

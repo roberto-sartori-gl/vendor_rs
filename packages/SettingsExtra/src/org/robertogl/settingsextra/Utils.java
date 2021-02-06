@@ -14,6 +14,9 @@ import android.hardware.display.DisplayManager;
 import android.view.Display;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -115,6 +118,25 @@ public final class Utils {
         }
     }
 
+    protected static String getProp(String property) {
+        Process sh = null;
+        BufferedReader reader = null;
+        String[] cmd = {"getprop", property};
+        try {
+            sh = Runtime.getRuntime().exec(cmd);
+            reader = new BufferedReader(new InputStreamReader(sh.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            return reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     protected static boolean isAlwaysOnDisplayEnabled(Context context) {
         return Settings.Secure.getInt(context.getContentResolver(),
                 "double_tap_to_wake", 0) != 0;
@@ -148,4 +170,11 @@ public final class Utils {
         if (DEBUG) Log.d (TAG, "vibration intensity: " + f_value);
         writeToFile("/sys/devices/virtual/timed_output/vibrator/vmax_mv", String.valueOf(f_value), context);
     }
+
+    public static <T> int[] indexOfMultiple(List<T> list, T object) {
+        return IntStream.range(0, list.size())
+                .filter(i -> Objects.equals(object, list.get(i)))
+                .toArray();
+    }
+
 }
