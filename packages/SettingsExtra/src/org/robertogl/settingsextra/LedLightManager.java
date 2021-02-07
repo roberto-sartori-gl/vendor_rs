@@ -2,6 +2,7 @@ package org.robertogl.settingsextra;
 
 import android.app.Notification;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -33,6 +34,10 @@ public class LedLightManager extends NotificationListenerService {
 
     private String configPath = "/sdcard/SettingsExtraLedConfiguration.conf";
 
+    private Boolean configFileAlreadyLoaded = false;
+    private Boolean isListenerConnected = false;
+    private Boolean wasServiceStarted = false;
+
     private Context mContext = null;
     static int RAMP_SIZE = 8;
     static int RAMP_STEP_DURATION = 50;
@@ -60,11 +65,40 @@ public class LedLightManager extends NotificationListenerService {
         super();
     }
 
-    protected void onClose() {
+    @Override
+    public void onListenerConnected(){
+        isListenerConnected = true;
+    }
+
+    @Override
+    public void onListenerDisconnected(){
+        isListenerConnected = false;
+    }
+
+    private void onClose() {
         // Disable our Light daemon
         if (DEBUG) Log.d(TAG, "Disabling LED manager");
         disableLed();
         Utils.setProp("persist.sys.disable.rgb", "");
+        configFileAlreadyLoaded = false;
+        if (isListenerConnected) {
+            requestUnbind();
+            isListenerConnected = false;
+        }
+    }
+
+    private void onPowerOn() {
+        if (!wasServiceStarted) {
+            IntentFilter powerActionFilter = new IntentFilter();
+            powerActionFilter.addAction(Intent.ACTION_POWER_CONNECTED);
+            powerActionFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+            powerActionFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+            registerReceiver(mPowerReceiver, powerActionFilter);
+
+            if (isPowerConnected()) setColor("FFFF00", false, "0", "0");
+            if (isBatteryFull()) setColor("00FF00", false, "0", "0");
+            wasServiceStarted = true;
+        }
     }
 
     @Override
@@ -72,38 +106,50 @@ public class LedLightManager extends NotificationListenerService {
         super.onCreate();
         mContext = getApplication();
 
-        IntentFilter powerActionFilter = new IntentFilter();
-        powerActionFilter.addAction(Intent.ACTION_POWER_CONNECTED);
-        powerActionFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-        powerActionFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        registerReceiver(mPowerReceiver, powerActionFilter);
+        Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
+        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+
+        pref.registerOnSharedPreferenceChangeListener(mPreferenceListener);
 
         if (DEBUG) Log.d(TAG, "onCreate");
 
-        if (Utils.getProp("persist.sys.disable.rgb").equals("0")) {
-            if (DEBUG) Log.d(TAG, "Disabling service");
-            onClose();
-            return;
-        }
-        if (!Utils.getProp("persist.sys.disable.rgb").equals("1")){
+        if (!Utils.getProp("persist.sys.disable.rgb").equals("1")) {
             if (DEBUG) Log.d(TAG, "Service is disabled");
+            requestUnbind();
             return;
         }
 
-        if (isPowerConnected()) setColor("FFFF00", false,"0", "0");
-        if (isBatteryFull()) setColor("00FF00", false,"0", "0");
+        onPowerOn();
+
     }
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            switch (key) {
+                case "ledManagerExtraEnabled":
+                    if (DEBUG) Log.d(TAG, "Settings for Led Manager changed");
+                    boolean isLedManagerEnabled = prefs.getBoolean("ledManagerExtraEnabled", false);
+                    if (isLedManagerEnabled) {
+                        if (DEBUG) Log.d(TAG, "Enabling Led Manager Extra");
+                        Utils.setProp("persist.sys.disable.rgb", "1");
+                        onPowerOn();
+                        requestRebind(new ComponentName(getApplicationContext(), LedLightManager.class));
+                    } else {
+                        if (DEBUG) Log.d(TAG, "Disabling Led Manager Extra");
+                        Utils.setProp("persist.sys.disable.rgb", "");
+                        onClose();
+                    }
+            }
+        }
+    };
 
     private final BroadcastReceiver mPowerReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (Utils.getProp("persist.sys.disable.rgb").equals("0")) {
-                if (DEBUG) Log.d(TAG, "Disabling service");
-                onClose();
-                return;
-            }
             if (!Utils.getProp("persist.sys.disable.rgb").equals("1")){
                 if (DEBUG) Log.d(TAG, "Service is disabled");
+                unregisterReceiver(mPowerReceiver);
                 return;
             }
 
@@ -111,6 +157,7 @@ public class LedLightManager extends NotificationListenerService {
                 case Intent.ACTION_BATTERY_CHANGED:
                 case Intent.ACTION_POWER_CONNECTED:
                     if (DEBUG) Log.d(TAG, "Power connected or battery status changed");
+                    if (DEBUG) Log.d(TAG, "currentEnabledApps: " + currentEnabledApps.size());
                     if (currentEnabledApps.isEmpty() || currentEnabledApps == null) {
                         if (isBatteryFull() && isPowerConnected()) {
                             if (currentEnabledApps.isEmpty() || currentEnabledApps == null) {
@@ -142,11 +189,6 @@ public class LedLightManager extends NotificationListenerService {
     @Override
     public void onNotificationPosted(StatusBarNotification notification) {
         if (DEBUG) Log.d(TAG, "Status: " + Utils.getProp("persist.sys.disable.rgb"));
-        if (Utils.getProp("persist.sys.disable.rgb").equals("0")) {
-            if (DEBUG) Log.d(TAG, "Disabling service");
-            onClose();
-            return;
-        }
         if (!Utils.getProp("persist.sys.disable.rgb").equals("1")){
             if (DEBUG) Log.d(TAG, "Service is disabled");
             return;
@@ -159,12 +201,6 @@ public class LedLightManager extends NotificationListenerService {
 
     @Override
     public void onNotificationRemoved(StatusBarNotification notification) {
-        if (DEBUG) Log.d(TAG, "onNotificationRemoved");
-        if (Utils.getProp("persist.sys.disable.rgb").equals("0")) {
-            if (DEBUG) Log.d(TAG, "Disabling service");
-            onClose();
-            return;
-        }
         if (!Utils.getProp("persist.sys.disable.rgb").equals("1")){
             if (DEBUG) Log.d(TAG, "Service is disabled");
             return;
@@ -208,7 +244,7 @@ public class LedLightManager extends NotificationListenerService {
                     currentEnabledOffMsForApps.remove(occurencesArray[i]);
                     currentEnabledBlinkForApps.remove(occurencesArray[i]);
                     break;
-                } else if (currentEnabledStringForApps.get(occurencesArray[i]).isEmpty()) {
+                } else if (enabledStringForApps.get(occurencesArray[i]).isEmpty()) {
                     if (DEBUG) Log.d(TAG, "found an empty string removing led");
                     defaultIndex = occurencesArray[i];
                 }
@@ -267,11 +303,6 @@ public class LedLightManager extends NotificationListenerService {
 
     private void turnOffLed() {
         setColor("000000", false, "0", "0");
-        /*Utils.setProp("sys.blink_light", "0");
-        setBlueLight(0);
-        setRedLight(0);
-        setGreenLight(0);
-        Utils.setProp("ctl.start", "light_daemon");*/
     }
     private void loadConfig()  {
         if (DEBUG) Log.d(TAG, "loadConfig");
@@ -484,6 +515,7 @@ public class LedLightManager extends NotificationListenerService {
 
     private void saveDataOnSharedPref() {
         if (DEBUG) Log.d(TAG, "saveDataOnSharedPref");
+        if (configFileAlreadyLoaded) return;
         String data;
         try {
             data = getStringFromFile(configPath);
@@ -500,6 +532,7 @@ public class LedLightManager extends NotificationListenerService {
         edit.commit();
         edit.putString("ledSettingsBase64", Base64.getEncoder().encodeToString(data.getBytes()));
         edit.commit();
+        configFileAlreadyLoaded = true;
     }
 
     private String getDataFromSharedPref() {
@@ -556,4 +589,5 @@ public class LedLightManager extends NotificationListenerService {
         int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
         return plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB || plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS;
     }
+
 }

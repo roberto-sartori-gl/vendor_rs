@@ -3,7 +3,6 @@ package org.robertogl.settingsextra;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Looper;
-import android.os.Vibrator;
 import android.view.KeyEvent;
 import android.util.Log;
 import android.content.Intent;
@@ -14,7 +13,6 @@ import android.content.IntentFilter;
 
 import android.os.Handler;
 import android.os.PowerManager;
-import android.os.SystemClock;
 
 import android.content.SharedPreferences;
 
@@ -39,7 +37,6 @@ public class MainService extends AccessibilityService {
 
     private Context mContext;
     private AudioManager mAudioManager;
-    private Vibrator mVibrator;
 
     private final CallRecording mCallRecording = new CallRecording();
 
@@ -124,26 +121,19 @@ public class MainService extends AccessibilityService {
                         if (isImsMmTelManagerExtraRunning_1) mImsMmTelManagerExtra_1.onClose();
                         if (isImsMmTelManagerExtraRunning_2) mImsMmTelManagerExtra_2.onClose();
                     }
+                    break;
                 }
                 case "pocketModeEnabled":
                     if (DEBUG) Log.d(TAG, "Settings for PocketMode changed");
                     boolean isPocketModeEnabled = prefs.getBoolean("pocketModeEnabled", false);
                     if (isPocketModeEnabled) mPocketModeService.ProximitySensor(mContext);
+                    break;
                 case "headsUpNotificationsEnabled":
                     if (DEBUG) Log.d(TAG, "Settings for Heads Up notifications changed");
                     boolean areHeadsUpEnabled = prefs.getBoolean("headsUpNotificationsEnabled", true);
                     if (areHeadsUpEnabled) Utils.setHeadsUpNotification("1", mContext);
                     else Utils.setHeadsUpNotification("0", mContext);
-                case "ledManagerExtraEnabled":
-                    if (DEBUG) Log.d(TAG, "Settings for Led Manager changed");
-                    boolean isLedManagerEnabled = prefs.getBoolean("ledManagerExtraEnabled", false);
-                    if (isLedManagerEnabled) {
-                        if (DEBUG) Log.d(TAG, "Enabling Led Manager Extra");
-                        Utils.setProp("persist.sys.disable.rgb", "1");
-                    } else {
-                        if (DEBUG) Log.d(TAG, "Disabling Led Manager Extra");
-                        Utils.setProp("persist.sys.disable.rgb", "0");
-                    }
+                    break;
             }
         }
     };
@@ -167,7 +157,6 @@ public class MainService extends AccessibilityService {
         if (DEBUG) Log.d(TAG, "service is connected");
         mContext = this;
         mAudioManager = mContext.getSystemService(AudioManager.class);
-        mVibrator = mContext.getSystemService(Vibrator.class);
 
         Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
         SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
@@ -247,14 +236,6 @@ public class MainService extends AccessibilityService {
         // Set vibration intensity
         String vibrationIntensityFloat = pref.getString(Utils.vibrationIntensityString, "58");
         Utils.setVibrationIntensity(vibrationIntensityFloat, mContext);
-
-        // Enable the Led Manager service if needed
-        boolean isLedManagerEnabled = pref.getBoolean("ledManagerExtraEnabled", false);
-        if (isLedManagerEnabled) {
-            Utils.setProp("persist.sys.disable.rgb", "1");
-        } else {
-            Utils.setProp("persist.sys.disable.rgb", "");
-        }
     }
 
     @Override
