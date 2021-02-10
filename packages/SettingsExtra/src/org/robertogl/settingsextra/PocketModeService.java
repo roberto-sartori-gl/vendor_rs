@@ -34,8 +34,8 @@ public class PocketModeService implements SensorEventListener {
     private static final boolean DEBUG = MainService.DEBUG;
     private static final String TAG = "PocketModeProximity";
 
-    private static final String CHEESEBURGER_FILE =
-            "/sys/devices/soc/soc:fpc_fpc1020/proximity_state";
+    private static final String CHEESEBURGER_FILE = Utils.CHEESEBURGER_FP_PROXIMITY_FILE;
+
     private static final String DUMPLING_FILE =
             "/sys/devices/soc/soc:goodix_fp/proximity_state";
 

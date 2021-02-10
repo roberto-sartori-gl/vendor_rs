@@ -38,5 +38,16 @@ public class UserBootCompletedReceiver extends BroadcastReceiver {
             }
         };
         AdaptiveBrightnessHandler.post(adaptiveBrightnessRunnable);
+
+        Handler gamingTileHandler = new Handler(Looper.getMainLooper());
+        // Update the Gaming Tile with current status
+        Runnable gamingTileRunnable = new Runnable() {
+            @Override
+            public void run() {
+                GamingModeTile.requestListeningState(deviceProtectedContext, new ComponentName(deviceProtectedContext, GamingModeTile.class));
+                Utils.disableGamingMode(context);
+            }
+        };
+        gamingTileHandler.post(gamingTileRunnable);
     }
 }

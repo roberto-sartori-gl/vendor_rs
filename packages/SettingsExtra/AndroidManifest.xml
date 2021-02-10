@@ -77,6 +77,17 @@
                 android:value="true" />
         </service>
 
+        <service
+            android:name=".GamingModeTile"
+            android:enabled="true"
+            android:icon="@drawable/ic_gaming_mode"
+            android:label="Gaming Mode"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".TilePreference"
             android:excludeFromRecents="true"
