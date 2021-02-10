@@ -61,10 +61,6 @@ public class LedLightManager extends NotificationListenerService {
     int offMs = 0;
     int onMs = 0;
 
-    public LedLightManager() {
-        super();
-    }
-
     @Override
     public void onListenerConnected(){
         isListenerConnected = true;
@@ -95,8 +91,8 @@ public class LedLightManager extends NotificationListenerService {
             powerActionFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
             registerReceiver(mPowerReceiver, powerActionFilter);
 
-            if (isPowerConnected()) setColor("FFFF00", false, "0", "0");
-            if (isBatteryFull()) setColor("00FF00", false, "0", "0");
+            if (!isBatteryFull() && isPowerConnected()) setColor("FFFF00", false, "0", "0");
+            else if (isBatteryFull() && isPowerConnected()) setColor("00FF00", false, "0", "0");
             wasServiceStarted = true;
         }
     }
