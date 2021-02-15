@@ -75,12 +75,12 @@ public class BootCompletedReceiver extends BroadcastReceiver {
             Utils.writeToFile(Utils.displayModeDCIP3Node, "1", deviceProtectedContext);
 
         // Allow the LedLightManager to access notifications
-        String LedServiceString = package_name + "/" + package_name + ".LedLightManager";
+        boolean isLedManagerEnabled = pref.getBoolean("ledManagerExtraEnabled", false);
+        String LedServiceString = "org.robertogl.ledmanagerextra" + "/" + "org.robertogl.ledmanagerextra" + ".LedLightManager";
         NotificationManager mNotificationManager = deviceProtectedContext.getSystemService(NotificationManager.class);
-        if (!mNotificationManager.isNotificationListenerAccessGranted(ComponentName.unflattenFromString(LedServiceString))) {
+        if (isLedManagerEnabled) {
             if (DEBUG) Log.d(TAG, "Enabling LedLightManager");
             mNotificationManager.setNotificationListenerAccessGranted(ComponentName.unflattenFromString(LedServiceString), true);
         }
-
     }
 }

@@ -2,9 +2,10 @@
 PRODUCT_PACKAGES += \
     libril-wrapper
 
-# SettingsExtra
+# Extra Apps
 PRODUCT_PACKAGES += \
-    SettingsExtra
+    SettingsExtra \
+    LedManagerExtra
 
 # Theme picker
 PRODUCT_PACKAGES += \

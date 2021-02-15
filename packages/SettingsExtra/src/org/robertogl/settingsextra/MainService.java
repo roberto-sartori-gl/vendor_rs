@@ -1,5 +1,7 @@
 package org.robertogl.settingsextra;
 
+import android.app.NotificationManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Looper;
@@ -134,6 +136,18 @@ public class MainService extends AccessibilityService {
                     if (areHeadsUpEnabled) Utils.setHeadsUpNotification("1", mContext);
                     else Utils.setHeadsUpNotification("0", mContext);
                     break;
+                case "ledManagerExtraEnabled":
+                    if (DEBUG) Log.d(TAG, "Settings for Led Manager Extra notifications changed");
+                    boolean isLedManagerEnabled = prefs.getBoolean("ledManagerExtraEnabled", false);
+                    String LedServiceString = "org.robertogl.ledmanagerextra" + "/" + "org.robertogl.ledmanagerextra" + ".LedLightManager";
+                    NotificationManager mNotificationManager = mContext.getSystemService(NotificationManager.class);
+                    if (isLedManagerEnabled) {
+                        if (DEBUG) Log.d(TAG, "Enabling LedLightManager");
+                        mNotificationManager.setNotificationListenerAccessGranted(ComponentName.unflattenFromString(LedServiceString), true);
+                    } else {
+                        if (DEBUG) Log.d(TAG, "Disabling LedLightManager");
+                        mNotificationManager.setNotificationListenerAccessGranted(ComponentName.unflattenFromString(LedServiceString), false);
+                    }
             }
         }
     };

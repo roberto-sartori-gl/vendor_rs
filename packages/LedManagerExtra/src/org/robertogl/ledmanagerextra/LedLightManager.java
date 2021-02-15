@@ -1,4 +1,4 @@
-package org.robertogl.settingsextra;
+package org.robertogl.ledmanagerextra;
 
 import android.app.Notification;
 import android.content.BroadcastReceiver;
@@ -30,7 +30,7 @@ import java.util.List;
 public class LedLightManager extends NotificationListenerService {
     private static final String TAG = "LedManagerExtra";
 
-    private static final boolean DEBUG = MainService.DEBUG;
+    private static final boolean DEBUG = true;
 
     private String configPath = "/sdcard/SettingsExtraLedConfiguration.conf";
 
@@ -64,11 +64,15 @@ public class LedLightManager extends NotificationListenerService {
     @Override
     public void onListenerConnected(){
         isListenerConnected = true;
+        loadConfig();
+        Utils.setProp("persist.sys.disable.rgb", "1");
+        onPowerOn();
     }
 
     @Override
     public void onListenerDisconnected(){
         isListenerConnected = false;
+        onClose();
     }
 
     private void onClose() {
@@ -77,13 +81,11 @@ public class LedLightManager extends NotificationListenerService {
         disableLed();
         Utils.setProp("persist.sys.disable.rgb", "");
         configFileAlreadyLoaded = false;
-        if (isListenerConnected) {
-            requestUnbind();
-            isListenerConnected = false;
-        }
+        unregisterReceiver(mPowerReceiver);
     }
 
     private void onPowerOn() {
+        mContext = getApplication();
         if (!wasServiceStarted) {
             IntentFilter powerActionFilter = new IntentFilter();
             powerActionFilter.addAction(Intent.ACTION_POWER_CONNECTED);
@@ -102,11 +104,6 @@ public class LedLightManager extends NotificationListenerService {
         super.onCreate();
         mContext = getApplication();
 
-        Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
-        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
-
-        pref.registerOnSharedPreferenceChangeListener(mPreferenceListener);
-
         if (DEBUG) Log.d(TAG, "onCreate");
 
         if (!Utils.getProp("persist.sys.disable.rgb").equals("1")) {
@@ -114,31 +111,7 @@ public class LedLightManager extends NotificationListenerService {
             requestUnbind();
             return;
         }
-
-        onPowerOn();
-
     }
-
-    private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-            switch (key) {
-                case "ledManagerExtraEnabled":
-                    if (DEBUG) Log.d(TAG, "Settings for Led Manager changed");
-                    boolean isLedManagerEnabled = prefs.getBoolean("ledManagerExtraEnabled", false);
-                    if (isLedManagerEnabled) {
-                        if (DEBUG) Log.d(TAG, "Enabling Led Manager Extra");
-                        Utils.setProp("persist.sys.disable.rgb", "1");
-                        onPowerOn();
-                        requestRebind(new ComponentName(getApplicationContext(), LedLightManager.class));
-                    } else {
-                        if (DEBUG) Log.d(TAG, "Disabling Led Manager Extra");
-                        Utils.setProp("persist.sys.disable.rgb", "");
-                        onClose();
-                    }
-            }
-        }
-    };
 
     private final BroadcastReceiver mPowerReceiver = new BroadcastReceiver() {
         @Override
@@ -204,6 +177,7 @@ public class LedLightManager extends NotificationListenerService {
 
         String packageName = notification.getPackageName();
         if (DEBUG) Log.d(TAG, packageName);
+        if (notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null) return;
         String title = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString();
         /*String message = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString();
         String message_lines = null;
