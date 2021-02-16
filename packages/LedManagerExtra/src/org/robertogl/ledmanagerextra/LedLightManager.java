@@ -2,7 +2,6 @@ package org.robertogl.ledmanagerextra;
 
 import android.app.Notification;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -52,6 +51,7 @@ public class LedLightManager extends NotificationListenerService {
     private final List<String> enabledOffMsForApps = new ArrayList<>();
 
     private final List<String> currentEnabledApps = new ArrayList<>();
+    private final List<Integer> currentEnabledID = new ArrayList<>();
     private final List<String> currentEnabledStringForApps = new ArrayList<>();
     private final List<String> currentEnabledColorsForApps = new ArrayList<>();
     private final List<Boolean> currentEnabledBlinkForApps = new ArrayList<>();
@@ -174,7 +174,7 @@ public class LedLightManager extends NotificationListenerService {
             if (DEBUG) Log.d(TAG, "Service is disabled");
             return;
         }
-
+        if (DEBUG) Log.d(TAG, "Notification removed");
         String packageName = notification.getPackageName();
         if (DEBUG) Log.d(TAG, packageName);
         if (notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null) return;
@@ -194,11 +194,12 @@ public class LedLightManager extends NotificationListenerService {
             if (DEBUG) Log.d(TAG, "Occurrences found: " + occurencesArray.length);
             boolean isFound = false;
             int defaultIndex = -1;
-            for (int i = 0; i < occurencesArray.length ; i++) {
+            for (int i = occurencesArray.length - 1; i >= 0; i--) {
                 // Check if we have strings for this package
                 if (DEBUG) Log.d(TAG, "title: " + title);
-                if (title != null) {
-                    isFound = title.toLowerCase().contains(currentEnabledStringForApps.get(occurencesArray[i]).toLowerCase());
+                String notifTitle = currentEnabledStringForApps.get(occurencesArray[i]);
+                if (title != null && !notifTitle.isEmpty() && notifTitle != null) {
+                    isFound = title.toLowerCase().contains(notifTitle.toLowerCase());
                 }
                 /*if (message != null) {
                     isFound = isFound || message.toLowerCase().contains(currentEnabledStringForApps.get(occurencesArray[i]).toLowerCase());
@@ -206,27 +207,31 @@ public class LedLightManager extends NotificationListenerService {
                 if (message_lines != null) {
                     isFound = isFound || message_lines.toLowerCase().contains(currentEnabledStringForApps.get(occurencesArray[i]).toLowerCase());
                 }*/
-                if (isFound && !enabledStringForApps.get(occurencesArray[i]).isEmpty()) {
-                    currentEnabledApps.remove(occurencesArray[i]);
-                    currentEnabledStringForApps.remove(occurencesArray[i]);
-                    currentEnabledColorsForApps.remove(occurencesArray[i]);
-                    currentEnabledOnMsForApps.remove(occurencesArray[i]);
-                    currentEnabledOffMsForApps.remove(occurencesArray[i]);
-                    currentEnabledBlinkForApps.remove(occurencesArray[i]);
-                    break;
-                } else if (enabledStringForApps.get(occurencesArray[i]).isEmpty()) {
-                    if (DEBUG) Log.d(TAG, "found an empty string removing led");
-                    defaultIndex = occurencesArray[i];
+                if (currentEnabledID.get(occurencesArray[i]) == notification.getId()) {
+                    if (isFound && !currentEnabledStringForApps.get(occurencesArray[i]).isEmpty()) {
+                        currentEnabledApps.remove(occurencesArray[i]);
+                        currentEnabledID.remove(occurencesArray[i]);
+                        currentEnabledStringForApps.remove(occurencesArray[i]);
+                        currentEnabledColorsForApps.remove(occurencesArray[i]);
+                        currentEnabledOnMsForApps.remove(occurencesArray[i]);
+                        currentEnabledOffMsForApps.remove(occurencesArray[i]);
+                        currentEnabledBlinkForApps.remove(occurencesArray[i]);
+                        //break;
+                    } else if (currentEnabledStringForApps.get(occurencesArray[i]).isEmpty()) {
+                        if (DEBUG) Log.d(TAG, "found an empty string removing led");
+                        defaultIndex = occurencesArray[i];
+                        if (!isFound) {
+                            currentEnabledApps.remove(defaultIndex);
+                            currentEnabledID.remove(defaultIndex);
+                            currentEnabledStringForApps.remove(defaultIndex);
+                            currentEnabledColorsForApps.remove(defaultIndex);
+                            currentEnabledOnMsForApps.remove(defaultIndex);
+                            currentEnabledOffMsForApps.remove(defaultIndex);
+                            currentEnabledBlinkForApps.remove(defaultIndex);
+                        }
+                    }
                 }
                 isFound = false;
-            }
-            if (defaultIndex != -1 && !isFound) {
-                currentEnabledApps.remove(defaultIndex);
-                currentEnabledStringForApps.remove(defaultIndex);
-                currentEnabledColorsForApps.remove(defaultIndex);
-                currentEnabledOnMsForApps.remove(defaultIndex);
-                currentEnabledOffMsForApps.remove(defaultIndex);
-                currentEnabledBlinkForApps.remove(defaultIndex);
             }
             // Set the color of the latest notification available
             if (currentEnabledColorsForApps.size() > 0) {
@@ -262,6 +267,7 @@ public class LedLightManager extends NotificationListenerService {
         if(enabledOffMsForApps.size() > 0) enabledOffMsForApps.clear();
 
         if(currentEnabledApps.size() > 0) currentEnabledApps.clear();
+        if(currentEnabledID.size() > 0) currentEnabledID.clear();
         if(currentEnabledStringForApps.size() > 0) currentEnabledStringForApps.clear();
         if(currentEnabledColorsForApps.size() > 0) currentEnabledColorsForApps.clear();
         if(currentEnabledBlinkForApps.size() > 0) currentEnabledBlinkForApps.clear();
@@ -359,11 +365,14 @@ public class LedLightManager extends NotificationListenerService {
             }
         }*/
         // Check if we have rules for this package
+
+        if (DEBUG) Log.d(TAG, "notification ID: " + notification.getId());
         if (enabledApps.contains(packageName)) {
             if (DEBUG) Log.d(TAG, "package found: " + packageName);
             // Add this to the current notifications
             currentEnabledApps.add(packageName);
-
+            // Add the ID for this application
+            currentEnabledID.add(notification.getId());
             int[] occurencesArray = Utils.indexOfMultiple(enabledApps, packageName);
             if (DEBUG) Log.d(TAG, "Occurrences found: " + occurencesArray.length);
             boolean isFound = false;
