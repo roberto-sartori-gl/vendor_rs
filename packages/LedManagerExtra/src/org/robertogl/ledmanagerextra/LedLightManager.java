@@ -29,7 +29,7 @@ import java.util.List;
 public class LedLightManager extends NotificationListenerService {
     private static final String TAG = "LedManagerExtra";
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private String configPath = "/sdcard/SettingsExtraLedConfiguration.conf";
 
