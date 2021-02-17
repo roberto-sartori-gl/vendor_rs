@@ -129,17 +129,15 @@ public class LedLightManager extends NotificationListenerService {
                     if (DEBUG) Log.d(TAG, "currentEnabledApps: " + currentEnabledApps.size());
                     if (currentEnabledApps.isEmpty() || currentEnabledApps == null) {
                         if (isBatteryFull() && isPowerConnected()) {
-                            if (currentEnabledApps.isEmpty() || currentEnabledApps == null) {
                                 // Set color for battery full (green)
                                 if (DEBUG) Log.d(TAG, "Setting battery full led");
                                 setColor("00FF00", false,
                                         "0", "0");
-                            }
                         } else if (isPowerConnected()) {
-                            // Set color for charging (yellow)
-                            if (DEBUG) Log.d(TAG, "Setting charging led");
-                            setColor("FFFF00", false,
-                                    "0", "0");
+                                // Set color for charging (yellow)
+                                if (DEBUG) Log.d(TAG, "Setting charging led");
+                                setColor("FFFF00", false,
+                                        "0", "0");
                         }
                     }
                     break;
@@ -158,11 +156,6 @@ public class LedLightManager extends NotificationListenerService {
     @Override
     public void onNotificationPosted(StatusBarNotification notification) {
         if (DEBUG) Log.d(TAG, "Status: " + Utils.getProp("persist.sys.disable.rgb"));
-        if (!Utils.getProp("persist.sys.disable.rgb").equals("1")){
-            if (DEBUG) Log.d(TAG, "Service is disabled");
-            return;
-        }
-
         if (notification != null && notification.getNotification() != null) {
             getNotificationAndSetLed(notification);
         }
@@ -170,13 +163,8 @@ public class LedLightManager extends NotificationListenerService {
 
     @Override
     public void onNotificationRemoved(StatusBarNotification notification) {
-        if (!Utils.getProp("persist.sys.disable.rgb").equals("1")){
-            if (DEBUG) Log.d(TAG, "Service is disabled");
-            return;
-        }
-        if (DEBUG) Log.d(TAG, "Notification removed");
         String packageName = notification.getPackageName();
-        if (DEBUG) Log.d(TAG, packageName);
+        if (DEBUG) Log.d(TAG, "Notification removed for: " + packageName);
         if (notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null) return;
         String title = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString();
         /*String message = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString();
@@ -485,70 +473,36 @@ public class LedLightManager extends NotificationListenerService {
             buf += String.valueOf(i * brightness / 255);
             buf += ",";
         }
-        return removeLastChars(buf, 1);
-    }
-
-    private static String removeLastChars(String str, int chars) {
-        return str.substring(0, str.length() - chars);
-    }
-
-    private void saveDataOnSharedPref() {
-        if (DEBUG) Log.d(TAG, "saveDataOnSharedPref");
-        if (configFileAlreadyLoaded) return;
-        String data;
-        try {
-            data = getStringFromFile(configPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        if (DEBUG) Log.d(TAG, "data: " + data);
-        Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
-        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
-        SharedPreferences.Editor edit=pref.edit();
-        if (DEBUG) Log.d(TAG, "data encoded: " + Base64.getEncoder().encodeToString(data.getBytes()));
-        edit.remove("ledSettingsBase64");
-        edit.commit();
-        edit.putString("ledSettingsBase64", Base64.getEncoder().encodeToString(data.getBytes()));
-        edit.commit();
-        configFileAlreadyLoaded = true;
+        return Utils.removeLastChars(buf, 1);
     }
 
     private String getDataFromSharedPref() {
-        saveDataOnSharedPref();
-        if (DEBUG) Log.d(TAG, "getDataFromSharedPref");
         Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
         SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+        if (!configFileAlreadyLoaded) {
+            if (DEBUG) Log.d(TAG, "saveDataOnSharedPref");
+            try {
+                String data;
+                data = Utils.getStringFromFile(configPath);
+                if (DEBUG) Log.d(TAG, "data: " + data);
+                SharedPreferences.Editor edit = pref.edit();
+                if (DEBUG)
+                    Log.d(TAG, "data encoded: " + Base64.getEncoder().encodeToString(data.getBytes()));
+                edit.remove("ledSettingsBase64");
+                edit.commit();
+                edit.putString("ledSettingsBase64", Base64.getEncoder().encodeToString(data.getBytes()));
+                edit.commit();
+                configFileAlreadyLoaded = true;
+            } catch (IOException e) {
+                // Data is not decrypted yet
+                configFileAlreadyLoaded = false;
+            }
+        }
+        if (DEBUG) Log.d(TAG, "getDataFromSharedPref");
         String prefData = pref.getString("ledSettingsBase64", null);
         if (prefData == null) return null;
         String data = new String(Base64.getDecoder().decode(prefData), StandardCharsets.UTF_8);
         return data;
-    }
-
-    private static String getStringFromFile (String filePath) throws IOException {
-        File fl = new File(filePath);
-        FileInputStream fin = new FileInputStream(fl);
-        String ret = convertStreamToString(fin);
-        //Make sure you close all streams.
-        fin.close();
-        return ret;
-    }
-
-    private static String convertStreamToString(InputStream is) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        Boolean firstLine = true;
-        while ((line = reader.readLine()) != null) {
-            if(firstLine){
-                sb.append(line);
-                firstLine = false;
-            } else {
-                sb.append("\n").append(line);
-            }
-        }
-        reader.close();
-        return sb.toString();
     }
 
     private Boolean isBatteryFull() {
@@ -568,5 +522,4 @@ public class LedLightManager extends NotificationListenerService {
         int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
         return plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB || plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS;
     }
-
 }
