@@ -32,7 +32,8 @@ PRODUCT_ENFORCE_RRO_TARGETS := framework-res
 PRODUCT_VENDOR_KERNEL_HEADERS := device/oneplus/cheeseburger/kernel-headers
 
 PRODUCT_SOONG_NAMESPACES += \
-    vendor/qcom/opensource/data-ipa-cfg-mgr
+    vendor/qcom/opensource/data-ipa-cfg-mgr \
+    vendor/qcom/opensource/dataservices
 
 # Camera API1 ZSL
 PRODUCT_PROPERTY_OVERRIDES += \
