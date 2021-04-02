@@ -178,7 +178,16 @@ public final class Utils {
         int f_value = (max / 100) * Integer.valueOf(value);
         if (f_value < min) f_value = min + 1;
         if (DEBUG) Log.d (TAG, "vibration intensity: " + f_value);
-        writeToFile("/sys/devices/virtual/timed_output/vibrator/vtg_level", String.valueOf(f_value), context);
+        try {
+                writeToFile("/sys/devices/virtual/timed_output/vibrator/vtg_level", String.valueOf(f_value), context);
+        } catch (Exception e) {
+                if (DEBUG) Log.d(TAG, "This is not Lazy kernel!");
+        }
+        try {
+                writeToFile("/sys/devices/virtual/timed_output/vibrator/vmax_mv", String.valueOf(f_value), context);
+        } catch (Exception e) {
+                if (DEBUG) Log.d(TAG, "This is not Lineage kernel!");
+        }
     }
 
     public static <T> int[] indexOfMultiple(List<T> list, T object) {
