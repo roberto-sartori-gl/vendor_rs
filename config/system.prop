@@ -6,3 +6,6 @@ ro.surface_flinger.supports_background_blur=1
 
 # Safe volume level warning
 audio.safemedia.bypass=true
+
+# Disable package parsing cache
+pm.boot.disable_package_cache=1
