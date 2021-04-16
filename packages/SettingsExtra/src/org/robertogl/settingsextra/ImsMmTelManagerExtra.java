@@ -207,7 +207,7 @@ public class ImsMmTelManagerExtra {
             Log.d(TAG, "Status on " + mSubId + ": volte switch: " + isVolteSwitchOn() + ", voice capable: "
                     + volteVoiceCapable + ", video capable: " + volteVideoCapable + ", imsRegistered: " + imsRegistered + ", connection state: " + connectionState + ", network type:" + mNetworkType);
         return isVolteSwitchOn() && (volteVoiceCapable || volteVideoCapable) && imsRegistered
-                && mNetworkType == TelephonyManager.NETWORK_TYPE_LTE && connectionState == TelephonyManager.DATA_CONNECTED;
+                && (mNetworkType == TelephonyManager.NETWORK_TYPE_LTE || mNetworkType == TelephonyManager.NETWORK_TYPE_LTE_CA) && connectionState == TelephonyManager.DATA_CONNECTED;
     }
 
     // Well, we also care about this: is VoWifi actually available?
