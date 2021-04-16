@@ -62,7 +62,8 @@ public class ConnectivityManagerExtra {
                 isWifiConnected = true;
             } else if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
                 if (DEBUG) Log.d(TAG, "cellular network: connected");
-                forceNetworkSettingsUpdate();
+                forceDefaultNetworkMode();
+                isWifiConnected = false;
             }
         }
 
@@ -82,9 +83,10 @@ public class ConnectivityManagerExtra {
                 if (DEBUG) Log.d(TAG, "No network available, we were probably connected to a 2/3/4G network");
                 return;
             }
-            if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            if (!networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI ) && isWifiConnected) {
                 if (DEBUG) Log.d(TAG, "wifi: disconnected");
                 forceDefaultNetworkMode();
+                isWifiConnected = false;
             }
         }
     };
