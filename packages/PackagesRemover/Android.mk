@@ -17,7 +17,7 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_PRODUCT_MODULE := true
+LOCAL_VENDOR_MODULE := true
 
 LOCAL_PACKAGE_NAME := PackagesRemover
 LOCAL_SDK_VERSION := current
