@@ -15,10 +15,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     messaging
 
-# Stub package to be use to remove other packages
-PRODUCT_PACKAGES += \
-    PackagesRemover
-
 # Tri-state-key
 PRODUCT_PACKAGES += \
     tri-state-key_daemon
