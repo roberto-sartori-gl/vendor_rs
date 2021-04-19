@@ -7,10 +7,6 @@ import android.content.IntentFilter;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
-import android.telephony.ims.ImsManager;
-import android.telephony.ims.ImsMmTelManager;
-import android.telephony.ims.feature.MmTelFeature;
-import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -85,38 +81,6 @@ public class CallRecording {
     };
 
     public void startRecording() {
-        TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        for (int i = 1 ; i <= 2 ; i++) {
-            try {
-                TelephonyManager mTelephony = telephonyManager.createForSubscriptionId(1);
-                int mNetworkType = mTelephony.getNetworkType(i);
-
-                ImsManager mImsManager = new ImsManager(mContext);
-                ImsMmTelManager mImsMmTelManager = mImsManager.getImsMmTelManager(i);
-
-                boolean vowifiCall = mImsMmTelManager.isAvailable(MmTelFeature.MmTelCapabilities.CAPABILITY_TYPE_VOICE, ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN) ||
-                        mImsMmTelManager.isAvailable(MmTelFeature.MmTelCapabilities.CAPABILITY_TYPE_VIDEO, ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN);
-
-                if (mNetworkType == TelephonyManager.NETWORK_TYPE_IWLAN && vowifiCall && telephonyManager.isImsRegistered()) {
-                    Toast.makeText(mContext, "Cannot record VoWifi call", Toast.LENGTH_LONG).show();
-                    if (DEBUG) Log.d(TAG, "Cannot record VoWifi call on sim + " + i + " due to network type: " + mNetworkType);
-                    return;
-                }
-
-                boolean volteCall = mImsMmTelManager.isAvailable(MmTelFeature.MmTelCapabilities.CAPABILITY_TYPE_VOICE, ImsRegistrationImplBase.REGISTRATION_TECH_LTE) ||
-                        mImsMmTelManager.isAvailable(MmTelFeature.MmTelCapabilities.CAPABILITY_TYPE_VIDEO, ImsRegistrationImplBase.REGISTRATION_TECH_LTE);
-
-                if ((mNetworkType == TelephonyManager.NETWORK_TYPE_LTE || mNetworkType == TelephonyManager.NETWORK_TYPE_LTE_CA) && volteCall && telephonyManager.isImsRegistered()) {
-                    Toast.makeText(mContext, "Cannot record VoLTE call", Toast.LENGTH_LONG).show();
-                    if (DEBUG) Log.d(TAG, "Cannot record VoLTE call on sim + " + i + " due to network type: " + mNetworkType);;
-                    return;
-                }
-            } catch (Exception e) {
-                if (DEBUG)
-                    Log.d(TAG, "Error getting the current network status, but we can try to record the call anyway");
-            }
-        }
-
         if (!areWeRecordingACall) {
             Toast.makeText(mContext, "This call is being recorded", Toast.LENGTH_LONG).show();
             if (DEBUG) Log.d(TAG, "Starting MediaRecorder");
