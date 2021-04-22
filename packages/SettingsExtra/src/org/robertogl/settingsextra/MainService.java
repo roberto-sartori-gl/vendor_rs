@@ -1,5 +1,6 @@
 package org.robertogl.settingsextra;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -30,6 +31,17 @@ public class MainService extends AccessibilityService {
     private static final int KEYCODE_BACK = 158;
     private static final int KEYCODE_F4 = 62;
 
+    private static final String ACTION_SET_POWEROFF_ALARM =
+            "org.codeaurora.poweroffalarm.action.SET_ALARM";
+
+    private static final String ACTION_CANCEL_POWEROFF_ALARM =
+            "org.codeaurora.poweroffalarm.action.CANCEL_ALARM";
+
+    private static final String POWER_OFF_ALARM_PACKAGE =
+            "com.qualcomm.qti.poweroffalarm";
+
+    private static final String TIME = "time";
+
     private static final int msDoubleClickThreshold = 250;
     private long msDoubleClick = 0;
 
@@ -54,6 +66,8 @@ public class MainService extends AccessibilityService {
     private final ImsMmTelManagerExtra mImsMmTelManagerExtra_2 = new ImsMmTelManagerExtra();
 
     private final PocketModeService mPocketModeService = new PocketModeService();
+
+    private AlarmManager mAlarmManager;
 
     private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -203,6 +217,12 @@ public class MainService extends AccessibilityService {
         screenActionFilter.addAction(Intent.ACTION_SCREEN_ON);
         registerReceiver(mScreenStateReceiver, screenActionFilter);
 
+        // Register here to get the NEXT_ALARM_CLOCK_CHANGED events
+        // when the next alarm changes
+        IntentFilter alarmFilter = new IntentFilter();
+        alarmFilter.addAction("android.app.action.NEXT_ALARM_CLOCK_CHANGED");
+        registerReceiver(alarmReceiver, alarmFilter);
+
         // Enable the Dynamic Modem if the user enabled it
         boolean dynamicModem = pref.getBoolean("dynamicModem", false);
         if (dynamicModem) {
@@ -289,6 +309,51 @@ public class MainService extends AccessibilityService {
                         Utils.writeToFile(Utils.dozeWakeupNode, "0", mContext);
                     if (isPocketModeEnabled) mPocketModeService.disable();
                     break;
+            }
+        }
+    };
+
+    private BroadcastReceiver alarmReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (DEBUG) Log.d(TAG, "New alarm set or deleted");
+            Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
+            SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+            SharedPreferences.Editor editor = pref.edit();
+
+            long currentNextAlarm = pref.getLong("currentNextAlarm", -1);
+            if (DEBUG) Log.d(TAG, "Current saved time for next Alarm: " + currentNextAlarm);
+
+            mAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            AlarmManager.AlarmClockInfo mNextAlarm = mAlarmManager.getNextAlarmClock();
+
+            if (mNextAlarm == null && currentNextAlarm != -1) {
+                // We don't have any alarm set (mNextAlarm == null) but we did set an alarm in the past (currentNextAlarm != -1)
+                // For this reason, remove any alarm from the RTC
+                if (DEBUG) Log.d(TAG, "Deleting an alarm from the RTC: " + currentNextAlarm);
+
+                Intent intentToSend = new Intent(ACTION_CANCEL_POWEROFF_ALARM);
+                intentToSend.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+                intentToSend.setPackage(POWER_OFF_ALARM_PACKAGE);
+                intentToSend.putExtra(TIME, currentNextAlarm);
+                context.sendBroadcast(intentToSend);
+
+                editor.putLong("currentNextAlarm", -1).apply();
+            }
+            else if (mNextAlarm != null) {
+                // We have an alarm set (mNextAlarm != null) so set it on the RTC
+                // Remove 90 seconds from the time decided by the user: the phone will wake up at this time
+                // but the alarm will still be triggered as decided by the user
+                long nextAlarm = mNextAlarm.getTriggerTime() - 90*1000;
+                if (DEBUG) Log.d(TAG, "Adding an alarm to the RTC: " + nextAlarm);
+
+                Intent intentToSend = new Intent(ACTION_SET_POWEROFF_ALARM);
+                intentToSend.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+                intentToSend.setPackage(POWER_OFF_ALARM_PACKAGE);
+                intentToSend.putExtra(TIME, nextAlarm);
+                context.sendBroadcast(intentToSend);
+
+                editor.putLong("currentNextAlarm", nextAlarm).apply();
             }
         }
     };
