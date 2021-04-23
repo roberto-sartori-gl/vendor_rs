@@ -344,6 +344,19 @@ public class MainService extends AccessibilityService {
                 // We have an alarm set (mNextAlarm != null) so set it on the RTC
                 // Remove 90 seconds from the time decided by the user: the phone will wake up at this time
                 // but the alarm will still be triggered as decided by the user
+
+                if (currentNextAlarm != -1) {
+                    // Ok, before that, delete the 'old' alarm if present
+                    // Only keep one alarm at a time in the RTC due to an Android API limitation:
+                    // we cannot get a full list of current alarms
+                    if (DEBUG) Log.d(TAG, "Deleting an alarm from the RTC before setting a new one: " + currentNextAlarm);
+                    Intent intentToSend = new Intent(ACTION_CANCEL_POWEROFF_ALARM);
+                    intentToSend.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+                    intentToSend.setPackage(POWER_OFF_ALARM_PACKAGE);
+                    intentToSend.putExtra(TIME, currentNextAlarm);
+                    context.sendBroadcast(intentToSend);
+                }
+
                 long nextAlarm = mNextAlarm.getTriggerTime() - 90*1000;
                 if (DEBUG) Log.d(TAG, "Adding an alarm to the RTC: " + nextAlarm);
 
