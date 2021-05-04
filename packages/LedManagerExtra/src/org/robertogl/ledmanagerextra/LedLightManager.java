@@ -165,8 +165,6 @@ public class LedLightManager extends NotificationListenerService {
     public void onNotificationRemoved(StatusBarNotification notification) {
         String packageName = notification.getPackageName();
         if (DEBUG) Log.d(TAG, "Notification removed for: " + packageName);
-        if (notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null) return;
-        String title = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString();
         /*String message = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString();
         String message_lines = null;
         CharSequence[] lines = notification.getNotification().extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
@@ -184,7 +182,14 @@ public class LedLightManager extends NotificationListenerService {
             int defaultIndex = -1;
             for (int i = occurencesArray.length - 1; i >= 0; i--) {
                 // Check if we have strings for this package
-                if (DEBUG) Log.d(TAG, "title: " + title);
+                String title;
+                if (notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null) {
+                    title = null;
+                    if (DEBUG) Log.d(TAG, "This notification has no title...");
+                } else {
+                    title = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString();
+                    if (DEBUG) Log.d(TAG, "title: " + title);
+                }
                 String notifTitle = currentEnabledStringForApps.get(occurencesArray[i]);
                 if (title != null && !notifTitle.isEmpty() && notifTitle != null) {
                     isFound = title.toLowerCase().contains(notifTitle.toLowerCase());
@@ -343,7 +348,6 @@ public class LedLightManager extends NotificationListenerService {
         loadConfig();
         String packageName = notification.getPackageName();
         if (DEBUG) Log.d(TAG, String.valueOf(enabledApps.size()));
-        String title = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString();
         /*String message = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString();
         String message_lines = null;
         CharSequence[] lines = notification.getNotification().extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
@@ -367,7 +371,14 @@ public class LedLightManager extends NotificationListenerService {
             int defaultIndex = -1;
             for (int i = 0; i < occurencesArray.length ; i++) {
                 // Check if we have strings for this package
-                if (DEBUG) Log.d(TAG, "title: " + title);
+                String title;
+                if (notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE) == null) {
+                    title = null;
+                    if (DEBUG) Log.d(TAG, "This notification has no title...");
+                } else {
+                    title = notification.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString();
+                    if (DEBUG) Log.d(TAG, "title: " + title);
+                }
                 if (title != null) {
                     isFound = title.toLowerCase().contains(enabledStringForApps.get(occurencesArray[i]).toLowerCase());
                 }
