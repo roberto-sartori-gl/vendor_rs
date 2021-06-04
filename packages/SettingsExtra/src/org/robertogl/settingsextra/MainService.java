@@ -357,7 +357,7 @@ public class MainService extends AccessibilityService {
                     context.sendBroadcast(intentToSend);
                 }
 
-                long nextAlarm = mNextAlarm.getTriggerTime() - 90*1000;
+                long nextAlarm = mNextAlarm.getTriggerTime() - 30*1000;
                 if (DEBUG) Log.d(TAG, "Adding an alarm to the RTC: " + nextAlarm);
 
                 Intent intentToSend = new Intent(ACTION_SET_POWEROFF_ALARM);
