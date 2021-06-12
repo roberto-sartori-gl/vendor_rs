@@ -50,7 +50,6 @@ public class MainService extends AccessibilityService {
     private static int clickToShutdown = 0;
 
     private Context mContext;
-    private AudioManager mAudioManager;
 
     private final CallManager mCallManager = new CallManager();
 
@@ -66,8 +65,6 @@ public class MainService extends AccessibilityService {
     private final ImsMmTelManagerExtra mImsMmTelManagerExtra_2 = new ImsMmTelManagerExtra();
 
     private final PocketModeService mPocketModeService = new PocketModeService();
-
-    private AlarmManager mAlarmManager;
 
     private final SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -210,7 +207,7 @@ public class MainService extends AccessibilityService {
         super.onServiceConnected();
         if (DEBUG) Log.d(TAG, "service is connected");
         mContext = this;
-        mAudioManager = mContext.getSystemService(AudioManager.class);
+        AudioManager mAudioManager = mContext.getSystemService(AudioManager.class);
 
         Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
         SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
@@ -355,7 +352,7 @@ public class MainService extends AccessibilityService {
             long currentNextAlarm = pref.getLong("currentNextAlarm", -1);
             if (DEBUG) Log.d(TAG, "Current saved time for next Alarm: " + currentNextAlarm);
 
-            mAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            AlarmManager mAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             AlarmManager.AlarmClockInfo mNextAlarm = mAlarmManager.getNextAlarmClock();
 
             if (mNextAlarm == null && currentNextAlarm != -1) {
