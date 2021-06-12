@@ -120,8 +120,8 @@ public class CallManager {
             if (DEBUG) Log.d(TAG, "Starting MediaRecorder");
             mCallRecorder = new MediaRecorder();
             mCallRecorder.setAudioSource(MediaRecorder.AudioSource.VOICE_CALL);
-            mCallRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mCallRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            mCallRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_WB);
+            mCallRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);
 
             String file = Environment.getExternalStorageDirectory().toString();
             String filepath = file + "/CallRecording";
@@ -131,7 +131,7 @@ public class CallManager {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
             String currentDateandTime = sdf.format(new Date());
 
-            filepath += "/" + currentDateandTime + "_" + callNumber + ".3gp";
+            filepath += "/" + currentDateandTime + "_" + callNumber + ".amr";
             mCallRecorder.setOutputFile(filepath);
 
             try {
