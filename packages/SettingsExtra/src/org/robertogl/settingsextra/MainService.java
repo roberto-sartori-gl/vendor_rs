@@ -99,11 +99,10 @@ public class MainService extends AccessibilityService {
                         mCallManager.onStartup(mContext);
                     }
 
-                    // Enable the CallRecording service if the user enabled the service
+                    // Enable the CallVibration service if the user enabled the service
                     mCallManager.enableCallVibration(areWeAllowedToVibrateDuringCalls);
                     if (!mCallManager.isServiceRunning) {
                         if (DEBUG) Log.d (TAG, "Stopping callmanager (disabled call vibration)");
-
                         if (!mCallManager.areWeRecordingACall) {
                             mCallManager.onClose();
                         } else {
