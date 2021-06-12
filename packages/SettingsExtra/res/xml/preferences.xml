@@ -75,6 +75,14 @@
 			app:iconSpaceReserved="false" />
 
 		<androidx.preference.SwitchPreferenceCompat
+			android:key="areWeAllowedToVibrateDuringCalls"
+			android:title="Enable vibration at call connect/disconnect"
+			android:defaultValue="false"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
+		<androidx.preference.SwitchPreferenceCompat
 			android:key="pocketModeEnabled"
 			android:title="Enable Pocket Mode"
 			app:summary="Disable fingerprint reader and double tap to wake when phone is in your pocket"

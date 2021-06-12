@@ -190,6 +190,14 @@ public final class Utils {
         }
     }
 
+    protected static void vibrate(int vibrationLength, Context context) {
+        try {
+            writeToFile("/sys/devices/virtual/timed_output/vibrator/enable", String.valueOf(vibrationLength), context);
+        } catch (Exception e) {
+            if (DEBUG) Log.d(TAG, "Cannot start vibration!");
+        }
+    }
+
     public static <T> int[] indexOfMultiple(List<T> list, T object) {
         return IntStream.range(0, list.size())
                 .filter(i -> Objects.equals(object, list.get(i)))

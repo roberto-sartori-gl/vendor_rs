@@ -52,7 +52,7 @@ public class MainService extends AccessibilityService {
     private Context mContext;
     private AudioManager mAudioManager;
 
-    private final CallRecording mCallRecording = new CallRecording();
+    private final CallManager mCallManager = new CallManager();
 
     private final NfcStatusMonitor mNfcMonitor = new NfcStatusMonitor();
 
@@ -77,15 +77,41 @@ public class MainService extends AccessibilityService {
                     boolean areWeAllowedToRecordCall = prefs.getBoolean("areWeAllowedToRecordCall", false);
                     if (DEBUG)
                         Log.d(TAG, "Preference change received. areWeAllowedToRecordCall now is: " + areWeAllowedToRecordCall);
-                    if (areWeAllowedToRecordCall) {
-                        // Start the CallRecording service if the user enabled the service
-                        mCallRecording.onStartup(mContext);
-                    } else if (!mCallRecording.areWeRecordingACall) {
-                        // Stop the CallRecording service now
-                        mCallRecording.onClose();
-                    } else {
-                        mCallRecording.stopListening = true;
-                        Toast.makeText(mContext, "Changes will be effective after the current call", Toast.LENGTH_LONG).show();
+                    if (areWeAllowedToRecordCall && !mCallManager.isServiceRunning) {
+                        if (DEBUG) Log.d (TAG, "Starting CallManager to record calls");
+                        mCallManager.onStartup(mContext);
+                    }
+
+                    // Enable the CallRecording service if the user enabled the service
+                    mCallManager.enableCallRecording(areWeAllowedToRecordCall);
+                    if (!mCallManager.isServiceRunning) {
+                        if (DEBUG) Log.d (TAG, "Stopping callmanager (disabled call recording)");
+                        if (!mCallManager.areWeRecordingACall) {
+                            mCallManager.onClose();
+                        } else {
+                            mCallManager.stopListening = true;
+                        }
+                    }
+                    break;
+                case "areWeAllowedToVibrateDuringCalls":
+                    boolean areWeAllowedToVibrateDuringCalls = prefs.getBoolean("areWeAllowedToVibrateDuringCalls", false);
+                    if (DEBUG)
+                        Log.d(TAG, "Preference change received. areWeAllowedToVibrateDuringCalls now is: " + areWeAllowedToVibrateDuringCalls);
+                    if (areWeAllowedToVibrateDuringCalls && !mCallManager.isServiceRunning) {
+                        if (DEBUG) Log.d (TAG, "Starting CallManager to vibrate during calls");
+                        mCallManager.onStartup(mContext);
+                    }
+
+                    // Enable the CallRecording service if the user enabled the service
+                    mCallManager.enableCallVibration(areWeAllowedToVibrateDuringCalls);
+                    if (!mCallManager.isServiceRunning) {
+                        if (DEBUG) Log.d (TAG, "Stopping callmanager (disabled call vibration)");
+
+                        if (!mCallManager.areWeRecordingACall) {
+                            mCallManager.onClose();
+                        } else {
+                            mCallManager.stopListening = true;
+                        }
                     }
                     break;
                 case "dynamicModem": {
@@ -171,7 +197,7 @@ public class MainService extends AccessibilityService {
         super.onDestroy();
         unregisterReceiver(mScreenStateReceiver);
         mBluetoothBatteryIcon.onClose();
-        mCallRecording.onClose();
+        mCallManager.onClose();
         mNfcMonitor.onClose();
         mAutoBrightenessMonitor.onClose();
         mConnectivityManagerExtra.onClose();
@@ -240,11 +266,16 @@ public class MainService extends AccessibilityService {
         // Start the Bluetooth battery icon on the status bar monitoring service
         mBluetoothBatteryIcon.onStartup(this);
 
-        // Start the CallRecording service if the user enabled the service
+        // Check prefs for call recording/vibration
+        boolean areWeAllowedToVibrateDuringCalls = pref.getBoolean("areWeAllowedToVibrateDuringCalls", false);
         boolean areWeAllowedToRecordCall = pref.getBoolean("areWeAllowedToRecordCall", false);
-        if (areWeAllowedToRecordCall) {
-            if (DEBUG) Log.d(TAG, "Starting the CallRecording service");
-            mCallRecording.onStartup(this);
+        if (areWeAllowedToVibrateDuringCalls || areWeAllowedToRecordCall) {
+            // Start the CallManager service if the user enabled the service
+            if (DEBUG) Log.d(TAG, "Enabling CallManager with call recording: " + areWeAllowedToRecordCall
+                    + " and call vibration: " + areWeAllowedToVibrateDuringCalls);
+            mCallManager.onStartup(this);
+            mCallManager.enableCallRecording(areWeAllowedToRecordCall);
+            mCallManager.enableCallVibration(areWeAllowedToVibrateDuringCalls);
         }
 
         // Start the ImsMmTelManagerExtra service if the user wants VoLTE or VoWiFi icon on status bar

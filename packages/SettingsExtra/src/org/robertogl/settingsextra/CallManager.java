@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -16,9 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class CallRecording {
+public class CallManager {
 
-    private final String TAG = "CallRecordingService";
+    private final String TAG = "CallManagerService";
 
     private final boolean DEBUG = MainService.DEBUG;
 
@@ -28,9 +30,17 @@ public class CallRecording {
 
     protected boolean areWeRecordingACall = false;
 
+    private boolean areWeVibrating = false;
+
     private Context mContext;
 
     protected boolean stopListening = false;
+
+    protected boolean areWeAllowedToRecordACall = false;
+
+    protected boolean areWeAllowedToVibrateDuringCalls = false;
+
+    protected boolean isServiceRunning = false;
 
     protected void onStartup(Context context) {
         mContext = context;
@@ -52,14 +62,24 @@ public class CallRecording {
     BroadcastReceiver CallRecorderReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) { String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
-
             if (TelephonyManager.EXTRA_STATE_OFFHOOK.equals(state)) {
                 if (DEBUG) Log.d(TAG, "Call in progress");
+                if (areWeAllowedToVibrateDuringCalls) {
+                    if (DEBUG) Log.d(TAG, "CallVibration enabled");
+                    vibrate(300);
+                }
+                if(!areWeAllowedToRecordACall) {
+                    if (DEBUG) Log.d(TAG, "CallRecording disabled");
+                    return;
+                }
                 startRecording();
             }
 
-            if (TelephonyManager.EXTRA_STATE_IDLE.equals(state) && areWeRecordingACall == true) {
+            if (TelephonyManager.EXTRA_STATE_IDLE.equals(state)) {
                 if (DEBUG) Log.d(TAG, "Call finished");
+                if (areWeAllowedToVibrateDuringCalls) {
+                    vibrate(300);
+                }
                 stopRecording();
             }
 
@@ -68,17 +88,31 @@ public class CallRecording {
                 callNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
             }
         }
-
-        ;
     };
 
 
     BroadcastReceiver OutGoingNumDetector = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent intent) {if (DEBUG) Log.d(TAG, "Outgoing call starting");
+        public void onReceive(Context context, Intent intent) {
+            if(!areWeAllowedToRecordACall) {
+                if (DEBUG) Log.d(TAG, "CallRecording disabled");
+                return;
+            }
+            if (DEBUG) Log.d(TAG, "Outgoing call starting");
             callNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
         }
     };
+
+    private void vibrate (int length) {
+        if (!areWeVibrating) {
+            areWeVibrating = true;
+            Utils.vibrate(length, mContext);
+        }
+        Handler handler = new Handler(Looper.myLooper());
+        handler.postDelayed(() -> {
+            areWeVibrating = false;
+        }, length + 50);
+    }
 
     public void startRecording() {
         if (!areWeRecordingACall) {
@@ -121,9 +155,25 @@ public class CallRecording {
             areWeRecordingACall = false;
         }
 
-        if (stopListening) {
-            onClose();
+        if (stopListening || !isServiceRunning) {
             stopListening = false;
-        }
+            onClose();
+         }
+
+    }
+
+    protected void enableCallRecording(boolean status) {
+        areWeAllowedToRecordACall = status;
+        enableService();
+    }
+
+    protected void enableCallVibration(boolean status) {
+        areWeAllowedToVibrateDuringCalls = status;
+        enableService();
+    }
+
+    private void enableService() {
+        if (areWeAllowedToRecordACall || areWeAllowedToVibrateDuringCalls) isServiceRunning = true;
+        else isServiceRunning = false;
     }
 }
