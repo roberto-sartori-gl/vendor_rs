@@ -18,6 +18,9 @@ BOARD_SEPOLICY_DIRS += vendor/rs/sepolicy
 
 SKIP_BOOT_JARS_CHECK := true
 
+# Explicitly disable AVB
+BOARD_AVB_ENABLE := false
+
 # Used to avoid getting errors for stuff we are not actually building
 # Remove when and if possible
 ALLOW_MISSING_DEPENDENCIES := true
