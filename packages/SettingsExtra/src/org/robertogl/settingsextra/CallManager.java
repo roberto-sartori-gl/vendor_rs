@@ -8,6 +8,8 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.telephony.PhoneStateListener;
+import android.telephony.PreciseCallState;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -42,6 +44,8 @@ public class CallManager {
 
     protected boolean isServiceRunning = false;
 
+    private boolean isAcallInProgress = false;
+
     protected void onStartup(Context context) {
         mContext = context;
 
@@ -51,6 +55,82 @@ public class CallManager {
         IntentFilter OutGoingNumFilter = new IntentFilter();
         OutGoingNumFilter.addAction("android.intent.action.NEW_OUTGOING_CALL");
         mContext.registerReceiver(OutGoingNumDetector, OutGoingNumFilter);
+
+        // Create listeners for sim1 and sim2 states
+        TelephonyManager mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+
+        TelephonyManager mTelephonySim1 = mTelephonyManager.createForSubscriptionId(1);
+        mTelephonySim1.listen(mPhoneStateListenerSim1, PhoneStateListener.LISTEN_PRECISE_CALL_STATE);
+
+        TelephonyManager mTelephonySim2 = mTelephonyManager.createForSubscriptionId(2);
+        mTelephonySim2.listen(mPhoneStateListenerSim2, PhoneStateListener.LISTEN_PRECISE_CALL_STATE);
+
+    }
+
+    /*
+    public static final int PRECISE_CALL_STATE_IDLE =           0; //Call idle
+    public static final int PRECISE_CALL_STATE_ACTIVE =         1; //Calling (active)
+    public static final int PRECISE_CALL_STATE_HOLDING =        2; //The call is suspended (for example, I am talking to multiple people, one of the calls is active, and the other calls will enter the suspended state)
+    public static final int PRECISE_CALL_STATE_DIALING =        3; //Dial start
+    public static final int PRECISE_CALL_STATE_ALERTING =       4; //Calling out (remind the other party to answer the call)
+    public static final int PRECISE_CALL_STATE_INCOMING =       5; //Call from the other party
+    public static final int PRECISE_CALL_STATE_WAITING =        6; //Third-party call waiting (for example, I am talking to someone, and when other people call in, it will enter the waiting state)
+    public static final int PRECISE_CALL_STATE_DISCONNECTED =   7; //Hang up completed
+    public static final int PRECISE_CALL_STATE_DISCONNECTING =  8; //Is hanging up
+    */
+
+    private final PhoneStateListener mPhoneStateListenerSim1 = new PhoneStateListener() {
+        @Override
+        public void onPreciseCallStateChanged(PreciseCallState preciseState) {
+            if (preciseState.getForegroundCallState() == PreciseCallState.PRECISE_CALL_STATE_ACTIVE) {
+                if (DEBUG) Log.d(TAG, "Call in progress on SIM 1");
+                manageCallStarting();
+            }
+
+            if (preciseState.getForegroundCallState() == PreciseCallState.PRECISE_CALL_STATE_IDLE) {
+                if (DEBUG) Log.d(TAG, "SIM 1 is idle");
+                manageCallEnding();
+            }
+        }
+    };
+
+    private final PhoneStateListener mPhoneStateListenerSim2 = new PhoneStateListener() {
+        @Override
+        public void onPreciseCallStateChanged(PreciseCallState preciseState) {
+            if (preciseState.getForegroundCallState() == PreciseCallState.PRECISE_CALL_STATE_ACTIVE) {
+                if (DEBUG) Log.d(TAG, "Call in progress on SIM 2");
+                manageCallStarting();
+            }
+
+            if (preciseState.getForegroundCallState() == PreciseCallState.PRECISE_CALL_STATE_IDLE) {
+                if (DEBUG) Log.d(TAG, "SIM 2 is idle");
+                manageCallEnding();
+            }
+        }
+    };
+
+    private void manageCallStarting(){
+        isAcallInProgress = true;
+        if (areWeAllowedToVibrateDuringCalls) {
+            if (DEBUG) Log.d(TAG, "CallVibration enabled");
+            vibrate(300);
+        }
+        if(!areWeAllowedToRecordACall) {
+            if (DEBUG) Log.d(TAG, "CallRecording disabled");
+            return;
+        }
+        if (!areWeRecordingACall) startRecording();
+    }
+
+    private void manageCallEnding(){
+        if (!isAcallInProgress) return;
+        isAcallInProgress = false;
+
+        if (DEBUG) Log.d(TAG, "Call finished");
+        if (areWeAllowedToVibrateDuringCalls) {
+            vibrate(300);
+        }
+        stopRecording();
     }
 
     protected void onClose() {
@@ -62,27 +142,6 @@ public class CallManager {
     BroadcastReceiver CallRecorderReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) { String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
-            if (TelephonyManager.EXTRA_STATE_OFFHOOK.equals(state)) {
-                if (DEBUG) Log.d(TAG, "Call in progress");
-                if (areWeAllowedToVibrateDuringCalls) {
-                    if (DEBUG) Log.d(TAG, "CallVibration enabled");
-                    vibrate(300);
-                }
-                if(!areWeAllowedToRecordACall) {
-                    if (DEBUG) Log.d(TAG, "CallRecording disabled");
-                    return;
-                }
-                startRecording();
-            }
-
-            if (TelephonyManager.EXTRA_STATE_IDLE.equals(state)) {
-                if (DEBUG) Log.d(TAG, "Call finished");
-                if (areWeAllowedToVibrateDuringCalls) {
-                    vibrate(300);
-                }
-                stopRecording();
-            }
-
             if (TelephonyManager.EXTRA_STATE_RINGING.equals(state)) {
                 if (DEBUG) Log.d(TAG, "Call ringing");
                 callNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
@@ -136,9 +195,7 @@ public class CallManager {
 
             try {
                 mCallRecorder.prepare();
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (IllegalStateException | IOException e) {
                 e.printStackTrace();
             }
             mCallRecorder.start();
