@@ -74,6 +74,16 @@
 			app:allowDividerBelow="true"
 			app:iconSpaceReserved="false" />
 
+		<androidx.preference.EditTextPreference
+			app:dependency="areWeAllowedToRecordCall"
+			android:dialogTitle="Internal memory path. Example: Music/CallRecording"
+			android:key="callRecordingDirectory"
+			android:title="Call recordings directory"
+			app:summary="Leave empty to use default directory"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
 		<androidx.preference.SwitchPreferenceCompat
 			android:key="areWeAllowedToVibrateDuringCalls"
 			android:title="Enable vibration at call connect/disconnect"

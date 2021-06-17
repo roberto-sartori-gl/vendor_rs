@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.Handler;
@@ -175,7 +176,6 @@ public class CallManager {
 
     public void startRecording() {
         if (!areWeRecordingACall) {
-            Toast.makeText(mContext, "This call is being recorded", Toast.LENGTH_LONG).show();
             if (DEBUG) Log.d(TAG, "Starting MediaRecorder");
             mCallRecorder = new MediaRecorder();
             mCallRecorder.setAudioSource(MediaRecorder.AudioSource.VOICE_CALL);
@@ -183,7 +183,17 @@ public class CallManager {
             mCallRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);
 
             String file = Environment.getExternalStorageDirectory().toString();
-            String filepath = file + "/CallRecording";
+
+            Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
+            SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", Context.MODE_PRIVATE);
+
+            String callRecordingDirectory = pref.getString("callRecordingDirectory", "CallRecording");
+            if (callRecordingDirectory.startsWith("/sdcard")) {
+                callRecordingDirectory = callRecordingDirectory.substring(8);
+            }
+            if (callRecordingDirectory.isEmpty()) callRecordingDirectory = "CallRecording";
+            String filepath = file + "/" + callRecordingDirectory;
+            filepath = filepath.replaceAll("\\\\", "/");
             File dir = new File(filepath);
             dir.mkdirs();
 
@@ -197,7 +207,13 @@ public class CallManager {
                 mCallRecorder.prepare();
             } catch (IllegalStateException | IOException e) {
                 e.printStackTrace();
+                Toast.makeText(mContext, "Cannot use selected directory: call will not be recorded", Toast.LENGTH_LONG).show();
+                mCallRecorder.reset();
+                mCallRecorder.release();
+                return;
             }
+
+            Toast.makeText(mContext, "This call is being recorded", Toast.LENGTH_LONG).show();
             mCallRecorder.start();
             areWeRecordingACall = true;
         }
