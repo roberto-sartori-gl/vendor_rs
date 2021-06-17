@@ -26,6 +26,8 @@ public class MainService extends AccessibilityService {
 
     protected static final boolean DEBUG = false;
 
+    private boolean buttonsBacklightControl = false;
+
     // KeyCodes
     private static final int KEYCODE_APP_SELECT = 580;
     private static final int KEYCODE_BACK = 158;
@@ -184,6 +186,11 @@ public class MainService extends AccessibilityService {
                         if (DEBUG) Log.d(TAG, "Disabling LedLightManager");
                         mNotificationManager.setNotificationListenerAccessGranted(ComponentName.unflattenFromString(LedServiceString), false);
                     }
+                    break;
+                case "buttonsBacklightEnabled":
+                    if (DEBUG) Log.d(TAG, "Settings for Capacitive Buttons Backlight changed");
+                    buttonsBacklightControl = prefs.getBoolean("buttonsBacklightEnabled", false);
+                    break;
             }
         }
     };
@@ -297,6 +304,9 @@ public class MainService extends AccessibilityService {
         // Set vibration intensity
         String vibrationIntensityFloat = pref.getString(Utils.vibrationIntensityString, "58");
         Utils.setVibrationIntensity(vibrationIntensityFloat, mContext);
+
+        // Check if the capacitive buttons backlight should be controlled
+        buttonsBacklightControl = pref.getBoolean("buttonsBacklightEnabled", false);
     }
 
     @Override
@@ -327,7 +337,7 @@ public class MainService extends AccessibilityService {
                         Log.d(TAG, "Always On Display is: " + Utils.isAlwaysOnDisplayEnabled(mContext));
                     if (Utils.isAlwaysOnDisplayEnabled(mContext))
                         Utils.writeToFile(Utils.dozeWakeupNode, "1", mContext);
-                    Utils.setProp("sys.button_backlight.on", "false");
+                    if (!buttonsBacklightControl) Utils.setProp("sys.button_backlight.on", "false");
                     if (isPocketModeEnabled) mPocketModeService.enable();
                     break;
                 case Intent.ACTION_SCREEN_ON:
@@ -405,6 +415,7 @@ public class MainService extends AccessibilityService {
         switch (scanCode) {
             case KEYCODE_BACK:
             case KEYCODE_APP_SELECT:
+                if (!buttonsBacklightControl) return false;
                 if (event.getAction() == 0) {
                     clickToShutdown += 1;
                     Utils.setProp("sys.button_backlight.on", "true");
