@@ -57,6 +57,8 @@ public final class Utils {
 
     protected static String disableCapacitiveKeyNode = "/proc/touchpanel/key_disable";
 
+    protected static String disableHomeKey = "/sys/module/fpc1020_tee/parameters/ignor_home_for_ESD";
+
     protected static final String vibrationIntensityString = "vibrationIntensityString";
 
     protected static final String CHEESEBURGER_FP_PROXIMITY_FILE =
@@ -214,7 +216,7 @@ public final class Utils {
         Utils.writeToFile(Utils.disableCapacitiveKeyNode, "1", mContext);
         // Hack: we can already disable the home button using the proximity feature of the fingerprint senso
         // Instead of adding new property, we just use the same
-        Utils.writeToFile(Utils.CHEESEBURGER_FP_PROXIMITY_FILE, "1", mContext);
+        Utils.writeToFile(Utils.disableHomeKey, "1", mContext);
         // Save current status for automatic brightness
         int mode = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE,
                 Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
@@ -238,7 +240,7 @@ public final class Utils {
         // Enable capacitive keys
         Utils.writeToFile(Utils.disableCapacitiveKeyNode, "0", mContext);
         // Enable fingerprint sensor
-        Utils.writeToFile(Utils.CHEESEBURGER_FP_PROXIMITY_FILE, "0", mContext);
+        Utils.writeToFile(Utils.disableHomeKey, "0", mContext);
         // Restore previous status for heads up and automatic brightness
         String autoBrightnessValue = pref.getString("gm_extra.autobrightness", "2");
         boolean areHeadsUpEnabled = pref.getBoolean("headsUpNotificationsEnabled", true);
