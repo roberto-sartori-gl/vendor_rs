@@ -4,8 +4,10 @@ import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.media.AudioManager;
 import android.os.Looper;
+import android.provider.Settings;
 import android.view.KeyEvent;
 import android.util.Log;
 import android.content.Intent;
@@ -18,8 +20,6 @@ import android.os.Handler;
 import android.os.PowerManager;
 
 import android.content.SharedPreferences;
-
-import android.widget.Toast;
 
 public class MainService extends AccessibilityService {
     private static final String TAG = "MainService";
@@ -191,6 +191,10 @@ public class MainService extends AccessibilityService {
                     if (DEBUG) Log.d(TAG, "Settings for Capacitive Buttons Backlight changed");
                     buttonsBacklightControl = prefs.getBoolean("buttonsBacklightEnabled", false);
                     break;
+                case "navBarEnabled":
+                    if (DEBUG) Log.d(TAG, "Settings for navigation bar changed");
+                    Utils.manageNavBar(mContext);
+                    break;
             }
         }
     };
@@ -198,6 +202,7 @@ public class MainService extends AccessibilityService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mContext.getContentResolver().unregisterContentObserver(mNavigationModeObserver);
         unregisterReceiver(mScreenStateReceiver);
         mBluetoothBatteryIcon.onClose();
         mCallManager.onClose();
@@ -307,6 +312,12 @@ public class MainService extends AccessibilityService {
 
         // Check if the capacitive buttons backlight should be controlled
         buttonsBacklightControl = pref.getBoolean("buttonsBacklightEnabled", false);
+
+        // Listen for Navigation Mode changes
+        mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor("navigation_mode"),true, mNavigationModeObserver);
+
+        Utils.manageNavBar(mContext);
+
     }
 
     @Override
@@ -316,6 +327,15 @@ public class MainService extends AccessibilityService {
     @Override
     public void onInterrupt() {
     }
+
+    private final ContentObserver mNavigationModeObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
+        @Override
+        public void onChange(boolean selfChange) {
+            super.onChange(selfChange);
+            if (DEBUG) Log.d(TAG, "NAVIGATION_MODE changed");
+            Utils.manageNavBar(mContext);
+        }
+    };
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {

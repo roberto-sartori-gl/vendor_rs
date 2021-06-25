@@ -3,6 +3,7 @@ package org.robertogl.settingsextra;
 import android.app.Service;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -32,6 +33,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.widget.Toast;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -254,5 +256,62 @@ public final class Utils {
         }
         prefEditor.commit();
         if (DEBUG) Log.d(TAG, "Disabled Gaming Mode");
+    }
+
+    protected static void manageNavBar (Context mContext) {
+        if (DEBUG) Log.d(TAG, "manageNavBar");
+        String currentMainkeysStatus = Utils.getProp("qemu.hw.mainkeys");
+        boolean mainKeysEnabled = false;
+        if (currentMainkeysStatus.equals("1")) mainKeysEnabled = true;
+        if (DEBUG) Log.d(TAG, "mainKeysEnabled: " + mainKeysEnabled);
+
+        Resources resources = mContext.getResources();
+        int navBarMode = resources.getIdentifier("config_navBarInteractionMode", "integer", "android");
+        if (DEBUG) Log.d(TAG, "navBarMode RAW: " + navBarMode);
+
+        if (navBarMode < 0) {
+            return;
+        }
+
+        navBarMode = resources.getInteger(navBarMode);
+        if (DEBUG) Log.d(TAG, "navBarMode: " + navBarMode);
+
+        Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
+        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+
+        boolean navBarEnabled = pref.getBoolean("navBarEnabled", false);
+        if (DEBUG) Log.d(TAG, "navBarEnabled: " + navBarEnabled);
+
+        if (navBarMode == 0){
+            // Navigation is displaying with 3 buttons
+            // Do we want nav bar on screen?
+            if (navBarEnabled) {
+                // check if qemu.hw.mainkeys is correct
+                // qemu.hw.mainkeys needs to be 0 to have navigation bar visible
+                Utils.setProp("persist.qemu.hw.mainkeys", "0");
+                if (mainKeysEnabled) {
+                    Toast.makeText(mContext, "A reboot is required to apply the new settings", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                // qemu.hw.mainkeys needs to be 1 to use capacitive buttons (no nav bar on screen)
+                Utils.setProp("persist.qemu.hw.mainkeys", "1");
+                if(!mainKeysEnabled) {
+                    Toast.makeText(mContext, "A reboot is required to apply the new settings", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+        else if (navBarMode == 1){
+            // Navigation is displaying with 2 button(Android P navigation mode)
+            // not supported
+            return;
+        }
+        else if (navBarMode == 2){
+            // Full screen gesture(Gesture on android Q)
+            // qemu.hw.mainkeys needs to be 0
+            Utils.setProp("persist.qemu.hw.mainkeys", "0");
+            if (mainKeysEnabled) {
+                Toast.makeText(mContext, "A reboot is required to apply the new settings", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }
