@@ -4,3 +4,5 @@ sys.blue_light              u:object_r:exported_system_prop:s0 exact string
 sys.green_light             u:object_r:exported_system_prop:s0 exact string
 sys.red_light               u:object_r:exported_system_prop:s0 exact string
 
+qemu.hw.mainkeys		u:object_r:exported_system_prop:s0 exact string
+persist.qemu.hw.mainkeys	u:object_r:exported_system_prop:s0 exact string
