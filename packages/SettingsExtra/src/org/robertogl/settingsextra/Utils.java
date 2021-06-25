@@ -66,6 +66,10 @@ public final class Utils {
     protected static final String CHEESEBURGER_FP_PROXIMITY_FILE =
             "/sys/devices/soc/soc:fpc_fpc1020/proximity_state";
 
+    private static boolean isGamingModeEnabled = false;
+
+    private static boolean isCapacitiveButtonsUsed = false;
+
     protected static String readFromFile(String path) {
         String aBuffer = "";
         try {
@@ -214,11 +218,9 @@ public final class Utils {
         SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = pref.edit();
 
-        // Disable capacitive keys
-        Utils.writeToFile(Utils.disableCapacitiveKeyNode, "1", mContext);
-        // Hack: we can already disable the home button using the proximity feature of the fingerprint senso
-        // Instead of adding new property, we just use the same
-        Utils.writeToFile(Utils.disableHomeKey, "1", mContext);
+        isGamingModeEnabled = true;
+        Utils.manageCapacitiveButtons(mContext);
+
         // Save current status for automatic brightness
         int mode = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE,
                 Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
@@ -239,10 +241,10 @@ public final class Utils {
         Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
         SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = pref.edit();
-        // Enable capacitive keys
-        Utils.writeToFile(Utils.disableCapacitiveKeyNode, "0", mContext);
-        // Enable fingerprint sensor
-        Utils.writeToFile(Utils.disableHomeKey, "0", mContext);
+
+        isGamingModeEnabled = false;
+        Utils.manageCapacitiveButtons(mContext);
+
         // Restore previous status for heads up and automatic brightness
         String autoBrightnessValue = pref.getString("gm_extra.autobrightness", "2");
         boolean areHeadsUpEnabled = pref.getBoolean("headsUpNotificationsEnabled", true);
@@ -291,12 +293,18 @@ public final class Utils {
                 Utils.setProp("persist.qemu.hw.mainkeys", "0");
                 if (mainKeysEnabled) {
                     Toast.makeText(mContext, "A reboot is required to apply the new settings", Toast.LENGTH_LONG).show();
+                } else {
+                    isCapacitiveButtonsUsed = false;
+                    Utils.manageCapacitiveButtons(mContext);
                 }
             } else {
                 // qemu.hw.mainkeys needs to be 1 to use capacitive buttons (no nav bar on screen)
                 Utils.setProp("persist.qemu.hw.mainkeys", "1");
                 if(!mainKeysEnabled) {
                     Toast.makeText(mContext, "A reboot is required to apply the new settings", Toast.LENGTH_LONG).show();
+                } else {
+                    isCapacitiveButtonsUsed = true;
+                    Utils.manageCapacitiveButtons(mContext);
                 }
             }
         }
@@ -311,7 +319,27 @@ public final class Utils {
             Utils.setProp("persist.qemu.hw.mainkeys", "0");
             if (mainKeysEnabled) {
                 Toast.makeText(mContext, "A reboot is required to apply the new settings", Toast.LENGTH_LONG).show();
+            } else {
+                isCapacitiveButtonsUsed = false;
+                Utils.manageCapacitiveButtons(mContext);
             }
+        }
+    }
+
+    protected static void manageCapacitiveButtons (Context mContext) {
+        boolean enabled = isCapacitiveButtonsUsed && !isGamingModeEnabled;
+        if (enabled) {
+            if (DEBUG) Log.d(TAG, "Enabling capacitive buttons");
+            // Enable capacitive keys
+            Utils.writeToFile(Utils.disableCapacitiveKeyNode, "0", mContext);
+            // Enable fingerprint sensor home button
+            Utils.writeToFile(Utils.disableHomeKey, "0", mContext);
+        } else {
+            if (DEBUG) Log.d(TAG, "Disabling capacitive buttons");
+            // Disable capacitive keys
+            Utils.writeToFile(Utils.disableCapacitiveKeyNode, "1", mContext);
+            // Disable fingerprint sensor home button
+            Utils.writeToFile(Utils.disableHomeKey, "1", mContext);
         }
     }
 }
