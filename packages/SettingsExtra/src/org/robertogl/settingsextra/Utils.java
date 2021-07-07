@@ -264,7 +264,7 @@ public final class Utils {
         if (DEBUG) Log.d(TAG, "manageNavBar");
         String currentMainkeysStatus = Utils.getProp("qemu.hw.mainkeys");
         boolean mainKeysEnabled = false;
-        if (currentMainkeysStatus.equals("1")) mainKeysEnabled = true;
+        if (currentMainkeysStatus.equals("1") || currentMainkeysStatus.isEmpty()) mainKeysEnabled = true;
         if (DEBUG) Log.d(TAG, "mainKeysEnabled: " + mainKeysEnabled);
 
         Resources resources = mContext.getResources();
