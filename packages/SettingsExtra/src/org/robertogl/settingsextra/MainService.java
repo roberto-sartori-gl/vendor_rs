@@ -357,7 +357,7 @@ public class MainService extends AccessibilityService {
                         Log.d(TAG, "Always On Display is: " + Utils.isAlwaysOnDisplayEnabled(mContext));
                     if (Utils.isAlwaysOnDisplayEnabled(mContext))
                         Utils.writeToFile(Utils.dozeWakeupNode, "1", mContext);
-                    if (!buttonsBacklightControl) Utils.setProp("sys.button_backlight.on", "false");
+                    Utils.setProp("sys.button_backlight.on", "false");
                     if (isPocketModeEnabled) mPocketModeService.enable();
                     break;
                 case Intent.ACTION_SCREEN_ON:
