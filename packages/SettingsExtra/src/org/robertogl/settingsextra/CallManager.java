@@ -143,6 +143,10 @@ public class CallManager {
     BroadcastReceiver CallRecorderReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) { String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+            if (TelephonyManager.EXTRA_STATE_IDLE.equals(state)) {
+                manageCallEnding();
+            }
+
             if (TelephonyManager.EXTRA_STATE_RINGING.equals(state)) {
                 if (DEBUG) Log.d(TAG, "Call ringing");
                 callNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
