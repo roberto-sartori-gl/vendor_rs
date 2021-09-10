@@ -27,6 +27,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     QuickAccessWallet
 
+# Radio config, needed by RIL
+PRODUCT_PACKAGES += \
+    android.hardware.radio.config@1.0.vendor
+
 PRODUCT_ENFORCE_RRO_TARGETS := framework-res
 
 PRODUCT_VENDOR_KERNEL_HEADERS := device/oneplus/cheeseburger/kernel-headers
