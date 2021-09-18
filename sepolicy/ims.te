@@ -1,0 +1,1 @@
+allow ims radio_control_prop:file { getattr open read };
