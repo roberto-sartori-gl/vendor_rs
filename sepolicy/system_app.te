@@ -4,3 +4,5 @@ allow system_app sysfs_livedisplay_tuneable:file { open write getattr };
 
 allow system_app sysfs_vibrator:dir search;
 allow system_app sysfs_vibrator:file { getattr open write };
+
+allow system_app qemu_hw_prop:file { getattr open read };
