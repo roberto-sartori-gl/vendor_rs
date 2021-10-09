@@ -1,0 +1,1 @@
+allow rild diag_device:chr_file { open ioctl read write };
