@@ -27,10 +27,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     QuickAccessWallet
 
-# Radio config, needed by RIL
-PRODUCT_PACKAGES += \
-    android.hardware.radio.config@1.0.vendor
-
 # Netd
 PRODUCT_PACKAGES += \
     android.system.net.netd@1.1.vendor
