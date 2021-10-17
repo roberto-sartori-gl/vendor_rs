@@ -49,15 +49,5 @@ public class UserBootCompletedReceiver extends BroadcastReceiver {
             }
         };
         gamingTileHandler.post(gamingTileRunnable);
-
-        Handler SIMSwitchHandler = new Handler(Looper.getMainLooper());
-        // Update the Gaming Tile with current status
-        Runnable SIMSwitchRunnable = new Runnable() {
-            @Override
-            public void run() {
-                SIMSwitchTile.requestListeningState(deviceProtectedContext, new ComponentName(deviceProtectedContext, SIMSwitchTile.class));
-            }
-        };
-        SIMSwitchHandler.post(SIMSwitchRunnable);
     }
 }
