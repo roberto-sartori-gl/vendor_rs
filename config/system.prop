@@ -9,3 +9,6 @@ audio.safemedia.bypass=true
 
 # Disable package parsing cache
 pm.boot.disable_package_cache=1
+
+# Radio
+persist.sys.fflag.override.settings_provider_model=false
