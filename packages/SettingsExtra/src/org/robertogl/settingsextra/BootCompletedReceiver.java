@@ -9,8 +9,6 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.SharedPreferences;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.provider.Settings;
 
@@ -82,5 +80,9 @@ public class BootCompletedReceiver extends BroadcastReceiver {
             if (DEBUG) Log.d(TAG, "Enabling LedLightManager");
             mNotificationManager.setNotificationListenerAccessGranted(ComponentName.unflattenFromString(LedServiceString), true);
         }
+
+        // Grant permissions to needed app (currently, Google apps)
+        DefaultPermissionGrantPolicyExtra mDefaultPermissionGrantPolicyExtra = new DefaultPermissionGrantPolicyExtra();
+        mDefaultPermissionGrantPolicyExtra.onStartup(deviceProtectedContext);
     }
 }

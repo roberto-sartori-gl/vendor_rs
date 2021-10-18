@@ -114,6 +114,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
     <uses-permission android:name="android.permission.REBOOT" />
+    <uses-permission android:name="android.permission.GRANT_RUNTIME_PERMISSIONS" />
 
     <uses-sdk
         android:minSdkVersion="30"
