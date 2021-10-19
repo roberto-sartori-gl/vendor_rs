@@ -13,6 +13,10 @@ PRODUCT_COPY_FILES += \
     vendor/rs/config/permissions/privapp_whitelist_com.android.wallpaper.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/privapp_whitelist_com.android.wallpaper.xml \
     vendor/rs/config/permissions/default_com.android.wallpaper.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/default-permissions/default_com.android.wallpaper.xml
 
+# Custom init.rc with all the instructions that needs to be run from the system partition
+PRODUCT_COPY_FILES += \
+    vendor/rs/prebuilt/init.aosp.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/init.aosp.rc
+
 include device/lineage/sepolicy/common/sepolicy.mk
 BOARD_SEPOLICY_DIRS += vendor/rs/sepolicy
 
