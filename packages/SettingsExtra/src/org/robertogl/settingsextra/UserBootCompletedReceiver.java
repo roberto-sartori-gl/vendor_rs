@@ -49,5 +49,10 @@ public class UserBootCompletedReceiver extends BroadcastReceiver {
             }
         };
         gamingTileHandler.post(gamingTileRunnable);
+
+        // Disable volume and alarm AOSP icons
+        // We will use our own
+        Utils.removeUnwantendStatusBarIcon(context, "volume");
+        Utils.removeUnwantendStatusBarIcon(context, "alarm_clock");
     }
 }
