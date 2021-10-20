@@ -52,6 +52,10 @@ PRODUCT_SOONG_NAMESPACES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     camera.disable_zsl_mode=1
 
+# XML format
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.sys.binary_xml=false
+
 PRODUCT_BROKEN_VERIFY_USES_LIBRARIES := true
 
 # Installs gsi keys into ramdisk, to boot a GSI with verified boot.
