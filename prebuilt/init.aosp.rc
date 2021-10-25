@@ -1,7 +1,1 @@
 # Custom init.rc that is included as /system/etc/init/init.aosp.rc
-
-# Workaround for TWRP bootloops on Android 12
-on property:sys.boot_completed=1
-    write /data/system/storage.xml ""
-    chmod 644 /data/system/storage.xml
-    exec - root root -- /system/bin/chattr +i /data/system/storage.xml
