@@ -1,2 +1,0 @@
-allow toolbox system_data_file:file { read open setattr };
-allow toolbox self:capability linux_immutable;
