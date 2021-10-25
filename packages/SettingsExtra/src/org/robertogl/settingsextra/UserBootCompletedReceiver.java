@@ -54,5 +54,8 @@ public class UserBootCompletedReceiver extends BroadcastReceiver {
         // We will use our own
         Utils.removeUnwantendStatusBarIcon(context, "volume");
         Utils.removeUnwantendStatusBarIcon(context, "alarm_clock");
+
+        // Remove rotate icon: we don't need it
+        Utils.removeUnwantendStatusBarIcon(context, "rotate");
     }
 }

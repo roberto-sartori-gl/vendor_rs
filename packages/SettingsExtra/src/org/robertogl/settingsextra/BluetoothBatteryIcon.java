@@ -49,8 +49,6 @@ public class BluetoothBatteryIcon {
     @SuppressLint("WrongConstant")
     private void updateBatteryLevel(int batteryLevel) {
         // If we are showing the default bluetooth icon, remove that now
-        // Remove also the 'rotate' icon that for some reason appears when other icons disappear
-        Utils.removeUnwantendStatusBarIcon(mContext, "rotate");
         Utils.removeUnwantendStatusBarIcon(mContext, "bluetooth");
         if (DEBUG)
             Log.d(TAG, "bluetooth: updating icon on status bar with battery level: " + batteryLevel);
