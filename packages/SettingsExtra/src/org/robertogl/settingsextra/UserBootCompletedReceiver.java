@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 
 public class UserBootCompletedReceiver extends BroadcastReceiver {
@@ -52,10 +53,23 @@ public class UserBootCompletedReceiver extends BroadcastReceiver {
 
         // Disable volume and alarm AOSP icons
         // We will use our own
-        Utils.removeUnwantendStatusBarIcon(context, "volume");
-        Utils.removeUnwantendStatusBarIcon(context, "alarm_clock");
+        Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "volume");
+        Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "alarm_clock");
 
         // Remove rotate icon: we don't need it
-        Utils.removeUnwantendStatusBarIcon(context, "rotate");
+        Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "rotate");
+
+        // Add back wifi and cell network tile
+        String currentTiles = Settings.Secure.getString(deviceProtectedContext.getContentResolver(), Settings.Secure.QS_TILES);
+        if (!currentTiles.contains("wifi")) {
+            Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
+                Settings.Secure.QS_TILES,currentTiles + ",wifi");
+        }
+
+        currentTiles = Settings.Secure.getString(deviceProtectedContext.getContentResolver(), Settings.Secure.QS_TILES);
+        if (!currentTiles.contains("cell")) {
+            Settings.Secure.putString(deviceProtectedContext.getContentResolver(),
+                Settings.Secure.QS_TILES,currentTiles + ",cell");
+        }
     }
 }
