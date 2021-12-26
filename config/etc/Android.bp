@@ -1,0 +1,5 @@
+prebuilt_etc {
+    name: "aosp-sysconfig.xml",
+    sub_dir: "sysconfig",
+    src: "aosp-sysconfig.xml",
+}
