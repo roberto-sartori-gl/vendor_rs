@@ -6,3 +6,5 @@ allow system_app sysfs_vibrator:dir search;
 allow system_app sysfs_vibrator:file { getattr open write };
 
 allow system_app qemu_hw_prop:file { getattr open read };
+
+allow system_app sysfs_fpc_proximity:file { open getattr write };
