@@ -16,6 +16,11 @@ $(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY): KEY_CERT_PAIR := $(DEFAULT_KEY_CERT_
 $(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY): .KATI_IMPLICIT_OUTPUTS := $(INTERNAL_OTA_METADATA_NO_RECOVERY)
 $(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY): $(BUILT_TARGET_FILES_PACKAGE) $(OTA_FROM_TARGET_FILES) $(INTERNAL_OTATOOLS_FILES)
 	@echo "Package OTA without recovery: $@"
+	$(hide) $(HOST_OUT_EXECUTABLES)/sign_target_files_apks -o --default_key_mappings vendor/rs/config/security/ $(BUILT_TARGET_FILES_PACKAGE) $(BUILT_TARGET_FILES_PACKAGE).signed
+	$(hide) mv $(BUILT_TARGET_FILES_PACKAGE).signed $(BUILT_TARGET_FILES_PACKAGE)
+	$(hide) rm -rf $(target_files_zip_root)
+	$(hide) mkdir -p $(target_files_zip_root)
+	$(hide) unzip -o $(BUILT_TARGET_FILES_PACKAGE) -d $(target_files_zip_root)/
 	$(hide) echo "#!/vendor/bin/sh" > $(target_files_zip_root)/$(install-recovery_path)
 	$(hide) echo "log -t recovery 'Recovery update is disabled!'" >> $(target_files_zip_root)/$(install-recovery_path)
 	$(hide) cd $(target_files_zip_root) && zip -q -r ../$(target_files_name).zip $(install-recovery_path)
