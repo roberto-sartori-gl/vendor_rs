@@ -8,6 +8,9 @@ on boot
     chown system system /sys/devices/virtual/graphics/fb0/srgb
     chown system system /sys/devices/virtual/graphics/fb0/dci_p3
 
+    # Symlink used by time daemon
+    symlink /mnt/vendor/persist/time /data/vendor/time
+
 on post-fs
     chown system system /sys/class/timed_output/vibrator/vmax_mv
     chown system system /sys/class/timed_output/vibrator/vtg_level
