@@ -3,6 +3,11 @@
 on early-boot
     setprop qemu.hw.mainkeys ${persist.qemu.hw.mainkeys}
 
+on boot
+    # Allow system apps to select display color gamut
+    chown system system /sys/devices/virtual/graphics/fb0/srgb
+    chown system system /sys/devices/virtual/graphics/fb0/dci_p3
+
 on post-fs
     chown system system /sys/class/timed_output/vibrator/vmax_mv
     chown system system /sys/class/timed_output/vibrator/vtg_level
