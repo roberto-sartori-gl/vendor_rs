@@ -41,3 +41,7 @@ BUILD_BROKEN_ENFORCE_SYSPROP_OWNER := true
 
 # Recovery
 TARGET_RECOVERY_UI_LIB := librecovery_ui_custom
+
+# Power
+TARGET_TAP_TO_WAKE_NODE := "/proc/touchpanel/double_tap_enable"
+TARGET_USES_INTERACTION_BOOST := true
