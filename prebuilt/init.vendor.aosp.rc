@@ -1,5 +1,8 @@
 # Custom init.rc that is included as /vendor/etc/init/init.vendor.aosp.rc
 
+on early-boot
+    setprop qemu.hw.mainkeys ${persist.qemu.hw.mainkeys}
+
 on post-fs
     chown system system /sys/class/timed_output/vibrator/vmax_mv
     chown system system /sys/class/timed_output/vibrator/vtg_level
