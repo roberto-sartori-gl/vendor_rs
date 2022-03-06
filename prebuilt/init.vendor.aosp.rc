@@ -3,3 +3,9 @@
 on post-fs
     chown system system /sys/class/timed_output/vibrator/vmax_mv
     chown system system /sys/class/timed_output/vibrator/vtg_level
+
+on property:sys.button_backlight.on=true
+    write /sys/class/leds/button-backlight/brightness 255
+
+on property:sys.button_backlight.on=false
+    write /sys/class/leds/button-backlight/brightness 0
