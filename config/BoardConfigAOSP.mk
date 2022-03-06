@@ -17,6 +17,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     vendor/rs/prebuilt/init.aosp.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/init.aosp.rc
 
+# Custom init.rc with instructions that needs to be run from the vendor partition
+PRODUCT_COPY_FILES += \
+    vendor/rs/prebuilt/init.vendor.aosp.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.vendor.aosp.rc
+
 include device/lineage/sepolicy/common/sepolicy.mk
 BOARD_SEPOLICY_DIRS += vendor/rs/sepolicy
 
