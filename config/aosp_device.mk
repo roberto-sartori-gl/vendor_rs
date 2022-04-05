@@ -60,4 +60,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.binary_xml=false
 
+# Disable remote keyguard animation
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+    persist.wm.enable_remote_keyguard_animation=0
+
 PRODUCT_BROKEN_VERIFY_USES_LIBRARIES := true
