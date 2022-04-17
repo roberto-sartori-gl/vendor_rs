@@ -1,4 +1,3 @@
-include vendor/rs/config/BoardConfigKernel.mk
 include vendor/rs/config/BoardConfigSoong.mk
 include vendor/rs/config/BoardConfigQcom.mk
 include vendor/rs/build/core/pathmap.mk
@@ -20,6 +19,10 @@ PRODUCT_COPY_FILES += \
 # Custom init.rc with instructions that needs to be run from the vendor partition
 PRODUCT_COPY_FILES += \
     vendor/rs/prebuilt/init.vendor.aosp.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.vendor.aosp.rc
+
+# Prebuilt kernel
+PRODUCT_COPY_FILES += \
+    kernel/oneplus/prebuilt/Image.gz-dtb:kernel
 
 include device/lineage/sepolicy/common/sepolicy.mk
 BOARD_SEPOLICY_DIRS += vendor/rs/sepolicy
