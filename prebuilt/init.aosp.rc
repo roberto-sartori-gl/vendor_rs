@@ -1,1 +1,6 @@
 # Custom init.rc that is included as /system/etc/init/init.aosp.rc
+
+service uncrypt_custom /system/bin/uncrypt ${sys.update_package.ota} ${sys.update_package.map}
+    class main
+    disabled
+    oneshot

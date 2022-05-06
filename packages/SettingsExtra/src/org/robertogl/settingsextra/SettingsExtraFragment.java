@@ -90,6 +90,17 @@ public class SettingsExtraFragment extends PreferenceFragmentCompat {
             }
         });
 
+        final Preference OTAUpdate = getPreferenceScreen().findPreference("ota_update");
+        OTAUpdate.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference){
+                if (DEBUG) Log.d(TAG, "Selected Advanced Reboot");
+                SettingsExtraOTAUpdate mOTAUpdate = new SettingsExtraOTAUpdate();
+                mOTAUpdate.startUpdate(getActivity());
+                return true;
+            }
+        });
+
         final Preference vibrationIntensity = getPreferenceScreen().findPreference("vibration_settings");
         vibrationIntensity.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
