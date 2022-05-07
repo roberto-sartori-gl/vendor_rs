@@ -10,10 +10,7 @@ ota_name := $(name)-ota-$(FILE_NAME_TAG)
 target_files_zip_root := $(intermediates)/$(target_files_name)
 
 INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY := $(PRODUCT_OUT)/$(ota_name)-no_recovery.zip
-INTERNAL_OTA_METADATA_NO_RECOVERY := $(PRODUCT_OUT)/ota_metadata_no_recovery
 
-$(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY): KEY_CERT_PAIR := $(DEFAULT_KEY_CERT_PAIR)
-$(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY): .KATI_IMPLICIT_OUTPUTS := $(INTERNAL_OTA_METADATA_NO_RECOVERY)
 $(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY): $(BUILT_TARGET_FILES_PACKAGE) $(OTA_FROM_TARGET_FILES) $(INTERNAL_OTATOOLS_FILES)
 	@echo "Package OTA without recovery: $@"
 	$(hide) $(HOST_OUT_EXECUTABLES)/sign_target_files_apks -o --default_key_mappings vendor/rs/config/security/ $(BUILT_TARGET_FILES_PACKAGE) $(BUILT_TARGET_FILES_PACKAGE).signed
@@ -24,10 +21,9 @@ $(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY): $(BUILT_TARGET_FILES_PACKAGE) $(OTA_
 	$(hide) echo "#!/vendor/bin/sh" > $(target_files_zip_root)/$(install-recovery_path)
 	$(hide) echo "log -t recovery 'Recovery update is disabled!'" >> $(target_files_zip_root)/$(install-recovery_path)
 	$(hide) cd $(target_files_zip_root) && zip -q -r ../$(target_files_name).zip $(install-recovery_path)
-	$(hide) zip -q -d $(BUILT_TARGET_FILES_PACKAGE) 'IMAGES/*'
+	$(hide) zip -q -d $(BUILT_TARGET_FILES_PACKAGE) 'IMAGES/vendor*'
 	$(hide) $(ADD_IMG_TO_TARGET_FILES) -a $(BUILT_TARGET_FILES_PACKAGE)
-	$(hide) unzip -o -j $(BUILT_TARGET_FILES_PACKAGE) -d $(target_files_zip_root)/IMAGES 'IMAGES/*'
-	$(call build-ota-package-target,$@,-k $(KEY_CERT_PAIR) --output_metadata_path $(INTERNAL_OTA_METADATA_NO_RECOVERY))
+	$(hide) $(HOST_OUT_EXECUTABLES)/ota_from_target_files $(BUILT_TARGET_FILES_PACKAGE) $@
 
 .PHONY: otapackage_norecovery
 otapackage_norecovery: $(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY)
