@@ -21,23 +21,28 @@ public class SettingsExtraOTAUpdate {
 
     private static final String[] RECOVERY_PACKAGES = {"--update_package=/cache/recovery/update.zip\n",
                                                        "--update_package=/cache/recovery/magisk.zip\n",
-                                                       "--update_package=/cache/recovery/gapps.zip\n"};
+                                                       "--update_package=/cache/recovery/gapps.zip\n",
+                                                       "--update_package=/cache/recovery/decrypt.zip\n"};
 
     private static final String[] RECOVERY_PACKAGES_MAP = {"--update_package=@/cache/recovery/update.map\n",
                                                            "--update_package=@/cache/recovery/magisk.map\n",
-                                                           "--update_package=@/cache/recovery/gapps.map\n"};
+                                                           "--update_package=@/cache/recovery/gapps.map\n",
+                                                           "--update_package=@/cache/recovery/decrypt.map\n"};
 
     private static final String[] SDCARD_RECOVERY_PACKAGES = {"update.zip",
                                                               "magisk.zip",
-                                                              "gapps.zip"};
+                                                              "gapps.zip",
+                                                              "decrypt.zip"};
 
     private static final String[] CACHE_RECOVERY_MAP = {"/cache/recovery/update.map",
                                                         "/cache/recovery/magisk.map",
-                                                        "/cache/recovery/gapps.map"};
+                                                        "/cache/recovery/gapps.map",
+                                                        "/cache/recovery/decrypt.map"};
 
     private static final String[] CACHE_RECOVERY = {"/cache/recovery/update.zip",
                                                     "/cache/recovery/magisk.zip",
-                                                    "/cache/recovery/gapps.zip"};
+                                                    "/cache/recovery/gapps.zip",
+                                                    "/cache/recovery/decrypt.zip"};
 
     private static final String TEMP_DATA_PREFIX = "/data/cache/";
 
@@ -48,8 +53,9 @@ public class SettingsExtraOTAUpdate {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Select the updates to be applied");
 
-        String[] updates = {"Android OS (/sdcard/update.zip)", "Magisk (/sdcard/magisk.zip)", "Gapps (/sdcard/gapps.zip), max 200MB"};
-        boolean[] checkedItems = {false, false, false};
+        String[] updates = {"Android OS (/sdcard/update.zip)", "Magisk (/sdcard/magisk.zip)", "Gapps (/sdcard/gapps.zip), max 200MB",
+                "Decryption zip (/sdcard/decrypt.zip)"};
+        boolean[] checkedItems = {false, false, false, false};
         builder.setMultiChoiceItems(updates, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
