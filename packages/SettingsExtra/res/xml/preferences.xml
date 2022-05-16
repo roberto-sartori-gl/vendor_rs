@@ -15,7 +15,7 @@
 
 	<androidx.preference.Preference
 		app:key="ota_update"
-		app:summary="TWRP is required to flash Magisk or Gapps"
+		app:summary="TWRP is required to flash Magisk, Gapps or Decryption zip"
 		app:title="Apply OTA Update"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
