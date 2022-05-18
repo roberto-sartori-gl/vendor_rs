@@ -27,6 +27,7 @@ LOCAL_STATIC_ANDROID_LIBRARIES := \
     androidx.preference_preference \
 
 LOCAL_OVERRIDES_PACKAGES := \
+    uceShimService \
     vendor.lineage.livedisplay@2.0-service.oneplus_msm8998 \
     vendor.lineage.touch@1.0-service.oneplus_msm8998
 
