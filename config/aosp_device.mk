@@ -40,6 +40,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.drm@1.4.vendor
 
+# Vibrator
+PRODUCT_PACKAGES += \
+    android.hardware.vibrator@1.0-impl:64 \
+    android.hardware.vibrator@1.0-service
+
 # Special permissions for system apps
 PRODUCT_PACKAGES += \
     aosp-sysconfig.xml
