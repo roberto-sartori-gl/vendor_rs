@@ -49,5 +49,8 @@ TARGET_RECOVERY_UI_LIB := librecovery_ui_custom
 TARGET_TAP_TO_WAKE_NODE := "/proc/touchpanel/double_tap_enable"
 TARGET_USES_INTERACTION_BOOST := true
 
+# Disable extended compress format
+AUDIO_FEATURE_ENABLED_EXTENDED_COMPRESS_FORMAT := false
+
 # VINTF
 DEVICE_MANIFEST_FILE += vendor/rs/config/vintf/android.hardware.vibrator_v1.0.xml
