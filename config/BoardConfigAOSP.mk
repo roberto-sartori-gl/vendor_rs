@@ -24,6 +24,11 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     kernel/oneplus/prebuilt/Image.gz-dtb:kernel
 
+# Init rc files for recovery
+PRODUCT_COPY_FILES += \
+    vendor/rs/config/recovery/root/init.recovery.qcom.rc:root/init.recovery.qcom.rc \
+    vendor/rs/config/recovery/root/init.recovery.qcom.usb.rc:root/init.recovery.qcom.usb.rc
+
 include device/lineage/sepolicy/common/sepolicy.mk
 BOARD_SEPOLICY_DIRS += vendor/rs/sepolicy
 
