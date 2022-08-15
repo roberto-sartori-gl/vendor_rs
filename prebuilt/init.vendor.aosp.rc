@@ -11,6 +11,9 @@ on boot
     # Symlink used by time daemon
     symlink /mnt/vendor/persist/time /data/vendor/time
 
+    # default country code
+    setprop ro.boot.wificountrycode 00
+
 on post-fs
     chown system system /sys/class/timed_output/vibrator/vmax_mv
     chown system system /sys/class/timed_output/vibrator/vtg_level
