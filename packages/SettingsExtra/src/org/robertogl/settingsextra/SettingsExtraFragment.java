@@ -47,19 +47,6 @@ public class SettingsExtraFragment extends PreferenceFragmentCompat {
             }
         });
 
-        final Preference flickerFree = getPreferenceScreen().findPreference("flickerFree");
-        flickerFree.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                String key = preference.getKey();
-                if (DEBUG) Log.d(TAG, key);
-                if ((boolean) newValue)
-                    Utils.writeToFile(Utils.flickerFreeNode, "1", getActivity());
-                else Utils.writeToFile(Utils.flickerFreeNode, "0", getActivity());
-                return true;
-            }
-        });
-
         final Preference displayMode = getPreferenceScreen().findPreference("display_mode");
         displayMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override

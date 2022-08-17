@@ -44,14 +44,6 @@
 			app:iconSpaceReserved="false"
 			app:allowDividerBelow="false">
 
-		<androidx.preference.SwitchPreferenceCompat
-			android:key="flickerFree"
-			android:title="Enable DC Dimming (flicker free display)"
-			android:defaultValue="false"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			app:iconSpaceReserved="false" />
-
 		<androidx.preference.ListPreference
 			app:defaultValue="normal"
 			app:persistent="true"

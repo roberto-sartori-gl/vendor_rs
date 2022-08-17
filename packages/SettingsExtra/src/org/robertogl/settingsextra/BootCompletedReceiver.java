@@ -61,10 +61,6 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         boolean areWeSwapping = pref.getBoolean("buttonSwap", false);
         if (areWeSwapping) Utils.writeToFile(Utils.keySwapNode, "1", deviceProtectedContext);
 
-        // Check if flicker free is enabled
-        boolean areWeFlickerFree = pref.getBoolean("flickerFree", false);
-        if (areWeFlickerFree) Utils.writeToFile(Utils.flickerFreeNode, "1", deviceProtectedContext);
-
         // Check the selected display color gamut
         String displayMode = pref.getString("display_mode", "normal");
         if (displayMode.equals("srgb"))
