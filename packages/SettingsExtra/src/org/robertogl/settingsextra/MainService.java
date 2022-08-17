@@ -66,6 +66,8 @@ public class MainService extends AccessibilityService {
 
     private final ImsMmTelManagerExtra mImsMmTelManagerExtra_1 = new ImsMmTelManagerExtra();
     private final ImsMmTelManagerExtra mImsMmTelManagerExtra_2 = new ImsMmTelManagerExtra();
+    private final ImsMmTelManagerExtra mImsMmTelManagerExtra_3 = new ImsMmTelManagerExtra();
+    private final ImsMmTelManagerExtra mImsMmTelManagerExtra_4 = new ImsMmTelManagerExtra();
 
     private final PocketModeService mPocketModeService = new PocketModeService();
 
@@ -142,6 +144,8 @@ public class MainService extends AccessibilityService {
                     // Check if the services are running
                     boolean isImsMmTelManagerExtraRunning_1 = mImsMmTelManagerExtra_1.isRunning;
                     boolean isImsMmTelManagerExtraRunning_2 = mImsMmTelManagerExtra_2.isRunning;
+                    boolean isImsMmTelManagerExtraRunning_3 = mImsMmTelManagerExtra_3.isRunning;
+                    boolean isImsMmTelManagerExtraRunning_4 = mImsMmTelManagerExtra_4.isRunning;
                     // If volte or vowifi icons should be shown but the services are not running, start them
                     if (shouldWeShowVolteIcon || shouldWeShowVoWifiIcon) {
                         if (!isImsMmTelManagerExtraRunning_1) {
@@ -156,11 +160,24 @@ public class MainService extends AccessibilityService {
                         } else {
                             mImsMmTelManagerExtra_2.notifyUserSettingChange();
                         }
-
+                        if (!isImsMmTelManagerExtraRunning_3) {
+                            if (DEBUG) Log.d(TAG, "Starting the mImsMmTelManagerExtra_3 service");
+                            mImsMmTelManagerExtra_3.onStartup(mContext, 3);
+                        } else {
+                            mImsMmTelManagerExtra_3.notifyUserSettingChange();
+                        }
+                        if (!isImsMmTelManagerExtraRunning_4) {
+                            if (DEBUG) Log.d(TAG, "Starting the mImsMmTelManagerExtra_4 service");
+                            mImsMmTelManagerExtra_4.onStartup(mContext, 4);
+                        } else {
+                            mImsMmTelManagerExtra_4.notifyUserSettingChange();
+                        }
                     } else {
                         if (DEBUG) Log.d(TAG, "Closing the mImsMmTelManagerExtra services");
                         if (isImsMmTelManagerExtraRunning_1) mImsMmTelManagerExtra_1.onClose();
                         if (isImsMmTelManagerExtraRunning_2) mImsMmTelManagerExtra_2.onClose();
+                        if (isImsMmTelManagerExtraRunning_3) mImsMmTelManagerExtra_3.onClose();
+                        if (isImsMmTelManagerExtraRunning_4) mImsMmTelManagerExtra_4.onClose();
                     }
                     break;
                 }
@@ -212,6 +229,8 @@ public class MainService extends AccessibilityService {
         mConnectivityManagerExtra.onClose();
         mImsMmTelManagerExtra_1.onClose();
         mImsMmTelManagerExtra_2.onClose();
+        mImsMmTelManagerExtra_3.onClose();
+        mImsMmTelManagerExtra_4.onClose();
     }
 
     @Override
@@ -300,6 +319,8 @@ public class MainService extends AccessibilityService {
             if (DEBUG) Log.d(TAG, "Starting the ImsMmTelManagerExtra service");
             mImsMmTelManagerExtra_1.onStartup(this, 1);
             mImsMmTelManagerExtra_2.onStartup(this, 2);
+            mImsMmTelManagerExtra_3.onStartup(this, 3);
+            mImsMmTelManagerExtra_4.onStartup(this, 4);
         }
 
         // Setup the PocketMode service if the user wants it

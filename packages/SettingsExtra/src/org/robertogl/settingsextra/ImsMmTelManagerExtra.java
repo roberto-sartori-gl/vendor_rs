@@ -180,6 +180,11 @@ public class ImsMmTelManagerExtra {
     }
 
     private void checkCurrentSituation() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            if (DEBUG) Log.d(TAG, "Timeout failed");
+        }
         imsRegistered = mTelephony.isImsRegistered();
 
         volteVoiceCapable = mImsMmTelManager.isAvailable(MmTelFeature.MmTelCapabilities.CAPABILITY_TYPE_VOICE, ImsRegistrationImplBase.REGISTRATION_TECH_LTE);
