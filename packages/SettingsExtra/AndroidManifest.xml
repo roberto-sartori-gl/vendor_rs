@@ -12,6 +12,13 @@
         android:label="SettingsExtra"
         android:persistent="true">
 
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:replace="android:authorities"
+            tools:node="remove">
+        </provider>
+
         <activity
             android:name="org.robertogl.settingsextra.SettingsExtraActivity"
             android:label="@string/settingsextra_display_title"
