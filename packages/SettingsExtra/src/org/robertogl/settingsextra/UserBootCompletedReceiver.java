@@ -52,10 +52,10 @@ public class UserBootCompletedReceiver extends BroadcastReceiver {
 
         // Disable volume and alarm AOSP icons
         // We will use our own
-        Utils.removeUnwantendStatusBarIcon(context, "volume");
-        Utils.removeUnwantendStatusBarIcon(context, "alarm_clock");
+        Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "volume");
+        Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "alarm_clock");
 
         // Remove rotate icon: we don't need it
-        Utils.removeUnwantendStatusBarIcon(context, "rotate");
+        Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "rotate");
     }
 }
