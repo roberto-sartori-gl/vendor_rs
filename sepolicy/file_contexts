@@ -2,3 +2,6 @@
 # tri-state-key
 /system/bin/tri-state-key_daemon                                                        u:object_r:tri-state-key_daemon_exec:s0
 /vendor/bin/hw/light_daemon                                                             u:object_r:hal_light_default_exec:s0
+
+/sys/devices/soc/800f000\.qcom,spmi/spmi-0/spmi0-02/800f000\.qcom,spmi:qcom,pmi8998@2:qcom,qpnp-smb2/extcon/extcon0/cable.*/name       u:object_r:sysfs_extcon:s0
+/sys/devices/soc/800f000\.qcom,spmi/spmi-0/spmi0-02/800f000\.qcom,spmi:qcom,pmi8998@2:qcom,usb-pdphy@1700/extcon/extcon1/cable.*/name       u:object_r:sysfs_extcon:s0
