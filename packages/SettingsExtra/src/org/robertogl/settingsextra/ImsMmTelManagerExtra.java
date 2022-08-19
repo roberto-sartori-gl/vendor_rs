@@ -99,6 +99,8 @@ public class ImsMmTelManagerExtra {
                     Log.d(TAG, "onDataConnectionStateChanged: state=" + state
                             + " type=" + networkType + " on subId: " + mSubId);
                 }
+                connectionState = state;
+                mNetworkType = networkType;
                 showVolteIcon(isVolteAvailable());
                 showVoWifiIcon(isVowifiAvailable());
             }
@@ -194,10 +196,6 @@ public class ImsMmTelManagerExtra {
         vowifiVoiceCapable = mImsMmTelManager.isAvailable(MmTelFeature.MmTelCapabilities.CAPABILITY_TYPE_VOICE, ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN);
 
         vowifiVideoCapable = mImsMmTelManager.isAvailable(MmTelFeature.MmTelCapabilities.CAPABILITY_TYPE_VIDEO, ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN);
-
-        mNetworkType = mTelephony.getNetworkType(mSubId);
-        connectionState = mTelephony.getDataState();
-
     }
 
     // We only care about this: is Volte actually available?

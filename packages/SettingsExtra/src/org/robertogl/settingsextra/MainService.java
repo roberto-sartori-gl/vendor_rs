@@ -9,6 +9,8 @@ import android.database.ContentObserver;
 import android.media.AudioManager;
 import android.os.Looper;
 import android.provider.Settings;
+import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
 import android.view.KeyEvent;
 import android.util.Log;
 import android.content.Intent;
@@ -21,6 +23,11 @@ import android.os.Handler;
 import android.os.PowerManager;
 
 import android.content.SharedPreferences;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 public class MainService extends AccessibilityService {
     private static final String TAG = "MainService";
@@ -54,6 +61,10 @@ public class MainService extends AccessibilityService {
 
     private Context mContext;
 
+    private SubscriptionManager mSubMgr;
+
+    private boolean mSubMgrRunning = false;
+
     private final CallManager mCallManager = new CallManager();
 
     private final NfcStatusMonitor mNfcMonitor = new NfcStatusMonitor();
@@ -64,10 +75,9 @@ public class MainService extends AccessibilityService {
 
     private final ConnectivityManagerExtra mConnectivityManagerExtra = new ConnectivityManagerExtra();
 
-    private final ImsMmTelManagerExtra mImsMmTelManagerExtra_1 = new ImsMmTelManagerExtra();
-    private final ImsMmTelManagerExtra mImsMmTelManagerExtra_2 = new ImsMmTelManagerExtra();
-    private final ImsMmTelManagerExtra mImsMmTelManagerExtra_3 = new ImsMmTelManagerExtra();
-    private final ImsMmTelManagerExtra mImsMmTelManagerExtra_4 = new ImsMmTelManagerExtra();
+    private final List<Integer> mSubList = new ArrayList<>();
+
+    private final HashMap<Integer,ImsMmTelManagerExtra> mImsMmTelManagerExtra = new HashMap<>();
 
     private final PocketModeService mPocketModeService = new PocketModeService();
 
@@ -141,43 +151,28 @@ public class MainService extends AccessibilityService {
                     if (DEBUG) Log.d(TAG, "Settings for ImsMmTelManagerExtra changed");
                     boolean shouldWeShowVolteIcon = prefs.getBoolean("showVolteIcon", false);
                     boolean shouldWeShowVoWifiIcon = prefs.getBoolean("showVowifiIcon", false);
-                    // Check if the services are running
-                    boolean isImsMmTelManagerExtraRunning_1 = mImsMmTelManagerExtra_1.isRunning;
-                    boolean isImsMmTelManagerExtraRunning_2 = mImsMmTelManagerExtra_2.isRunning;
-                    boolean isImsMmTelManagerExtraRunning_3 = mImsMmTelManagerExtra_3.isRunning;
-                    boolean isImsMmTelManagerExtraRunning_4 = mImsMmTelManagerExtra_4.isRunning;
                     // If volte or vowifi icons should be shown but the services are not running, start them
                     if (shouldWeShowVolteIcon || shouldWeShowVoWifiIcon) {
-                        if (!isImsMmTelManagerExtraRunning_1) {
-                            if (DEBUG) Log.d(TAG, "Starting the mImsMmTelManagerExtra_1 service");
-                            mImsMmTelManagerExtra_1.onStartup(mContext, 1);
-                        } else {
-                            mImsMmTelManagerExtra_1.notifyUserSettingChange();
+                        if (DEBUG) Log.d(TAG, "Showing volte or vowifi icon");
+                        if (!mSubMgrRunning) {
+                            if (DEBUG) Log.d(TAG, "Starting the mImsMmTelManagerExtra services");
+                            mSubMgr = (SubscriptionManager) mContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+                            mSubMgr.addOnSubscriptionsChangedListener(mSubscriptionsChangedListener);
+                            mSubMgrRunning = true;
                         }
-                        if (!isImsMmTelManagerExtraRunning_2) {
-                            if (DEBUG) Log.d(TAG, "Starting the mImsMmTelManagerExtra_2 service");
-                            mImsMmTelManagerExtra_2.onStartup(mContext, 2);
-                        } else {
-                            mImsMmTelManagerExtra_2.notifyUserSettingChange();
-                        }
-                        if (!isImsMmTelManagerExtraRunning_3) {
-                            if (DEBUG) Log.d(TAG, "Starting the mImsMmTelManagerExtra_3 service");
-                            mImsMmTelManagerExtra_3.onStartup(mContext, 3);
-                        } else {
-                            mImsMmTelManagerExtra_3.notifyUserSettingChange();
-                        }
-                        if (!isImsMmTelManagerExtraRunning_4) {
-                            if (DEBUG) Log.d(TAG, "Starting the mImsMmTelManagerExtra_4 service");
-                            mImsMmTelManagerExtra_4.onStartup(mContext, 4);
-                        } else {
-                            mImsMmTelManagerExtra_4.notifyUserSettingChange();
+                        manageImsIcons(true);
+                        // Update icons
+                        for (ImsMmTelManagerExtra ImsMmTelManagerExtraObject : mImsMmTelManagerExtra.values()) {
+                            ImsMmTelManagerExtraObject.notifyUserSettingChange();
                         }
                     } else {
-                        if (DEBUG) Log.d(TAG, "Closing the mImsMmTelManagerExtra services");
-                        if (isImsMmTelManagerExtraRunning_1) mImsMmTelManagerExtra_1.onClose();
-                        if (isImsMmTelManagerExtraRunning_2) mImsMmTelManagerExtra_2.onClose();
-                        if (isImsMmTelManagerExtraRunning_3) mImsMmTelManagerExtra_3.onClose();
-                        if (isImsMmTelManagerExtraRunning_4) mImsMmTelManagerExtra_4.onClose();
+                        if (DEBUG) Log.d(TAG, "Removing volte and vowifi icon");
+                        if (mSubMgrRunning) {
+                            if (DEBUG) Log.d(TAG, "Closing the mImsMmTelManagerExtra services");
+                            mSubMgr.removeOnSubscriptionsChangedListener(mSubscriptionsChangedListener);
+                            mSubMgrRunning = false;
+                        }
+                        manageImsIcons(false);
                     }
                     break;
                 }
@@ -227,10 +222,11 @@ public class MainService extends AccessibilityService {
         mNfcMonitor.onClose();
         mAutoBrightenessMonitor.onClose();
         mConnectivityManagerExtra.onClose();
-        mImsMmTelManagerExtra_1.onClose();
-        mImsMmTelManagerExtra_2.onClose();
-        mImsMmTelManagerExtra_3.onClose();
-        mImsMmTelManagerExtra_4.onClose();
+        if (mSubMgrRunning) {
+            mSubMgr.removeOnSubscriptionsChangedListener(mSubscriptionsChangedListener);
+            mSubMgrRunning = false;
+            manageImsIcons(false);
+        }
     }
 
     @Override
@@ -317,10 +313,9 @@ public class MainService extends AccessibilityService {
         shouldWeShowImsIcons = shouldWeShowImsIcons || pref.getBoolean("showVowifiIcon", false);
         if (shouldWeShowImsIcons) {
             if (DEBUG) Log.d(TAG, "Starting the ImsMmTelManagerExtra service");
-            mImsMmTelManagerExtra_1.onStartup(this, 1);
-            mImsMmTelManagerExtra_2.onStartup(this, 2);
-            mImsMmTelManagerExtra_3.onStartup(this, 3);
-            mImsMmTelManagerExtra_4.onStartup(this, 4);
+            mSubMgr = (SubscriptionManager) mContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+            mSubMgr.addOnSubscriptionsChangedListener(mSubscriptionsChangedListener);
+            mSubMgrRunning = true;
         }
 
         // Setup the PocketMode service if the user wants it
@@ -348,6 +343,56 @@ public class MainService extends AccessibilityService {
 
     }
 
+    private final SubscriptionManager.OnSubscriptionsChangedListener mSubscriptionsChangedListener = new SubscriptionManager.OnSubscriptionsChangedListener() {
+        @Override
+        public void onSubscriptionsChanged() {
+            if (DEBUG) Log.d(TAG, "Subscription event");
+            manageImsIcons(true);
+        }
+    };
+
+    private void manageImsIcons(boolean enabled) {
+        if (DEBUG) Log.d(TAG, "manageImsIcons");
+        if (enabled) {
+            SubscriptionManager mSubMgr = (SubscriptionManager) mContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+            List<SubscriptionInfo> subscriptionList = mSubMgr.getActiveSubscriptionInfoList();
+            // Get list of all subscriptions
+            List<Integer> mSubListTmp = new ArrayList<>();
+            for (SubscriptionInfo subInfo : subscriptionList) {
+                int mSubIdT = subInfo.getSubscriptionId();
+                mSubListTmp.add(mSubIdT);
+                if (DEBUG) Log.d(TAG, "Working on subscription ID: " + mSubIdT);
+            }
+            // Add new subscriptions
+            for (int mSubId : mSubListTmp) {
+                if (!(mSubList.contains(mSubId))) {
+                    mImsMmTelManagerExtra.put(mSubId, new ImsMmTelManagerExtra());
+                    Objects.requireNonNull(mImsMmTelManagerExtra.get(mSubId)).onStartup(mContext, mSubId);
+                    mSubList.add(mSubId);
+                    if (DEBUG) Log.d(TAG, "adding " + mSubId + " subscription ID to mSubList");
+                }
+            }
+            // Remove subscriptions that are not present anymore
+            List<Integer> mSubListTmpTmp = new ArrayList<>(mSubList);
+            for (int mSubId : mSubListTmpTmp) {
+                if (!(mSubListTmp.contains(mSubId))) {
+                    Objects.requireNonNull(mImsMmTelManagerExtra.get(mSubId)).onClose();
+                    mImsMmTelManagerExtra.remove(mSubId);
+                    mSubList.remove((Object) mSubId);
+                    if (DEBUG) Log.d(TAG, "removing " + mSubId + " subscription ID to mSubList");
+                }
+            }
+        } else {
+            // Remove all subscriptions
+            List<Integer> mSubListTmp = new ArrayList<>(mSubList);
+            for (int mSubId : mSubListTmp) {
+                    Objects.requireNonNull(mImsMmTelManagerExtra.get(mSubId)).onClose();
+                    mImsMmTelManagerExtra.remove(mSubId);
+                    mSubList.remove((Object) mSubId);
+                    if (DEBUG) Log.d(TAG, "removing " + mSubId + " subscription ID from mSubList");
+            }
+        }
+    }
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
     }
