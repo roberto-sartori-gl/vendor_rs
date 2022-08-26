@@ -36,6 +36,10 @@ public class MainService extends AccessibilityService {
 
     private boolean buttonsBacklightControl = false;
 
+    private boolean buttonsBacklightControlForced = false;
+
+    private Integer capacitiveButtonsTimeoutInt = 1500;
+
     // KeyCodes
     private static final int KEYCODE_APP_SELECT = 580;
     private static final int KEYCODE_BACK = 158;
@@ -200,6 +204,24 @@ public class MainService extends AccessibilityService {
                         mNotificationManager.setNotificationListenerAccessGranted(ComponentName.unflattenFromString(LedServiceString), false);
                     }
                     break;
+                case "buttonsBacklightEnabledForced":
+                    if (DEBUG)
+                        Log.d(TAG, "Settings for Capacitive Buttons Backlight Forced changed");
+                    boolean isCapacitiveBacklightForced = prefs.getBoolean("buttonsBacklightEnabledForced", false);
+                    if (isCapacitiveBacklightForced) {
+                        buttonsBacklightControl = false;
+                        buttonsBacklightControlForced = true;
+                        Utils.setProp("sys.button_backlight.on", "true");
+                    } else {
+                        buttonsBacklightControl = prefs.getBoolean("buttonsBacklightEnabled", false);
+                        buttonsBacklightControlForced = false;
+                        Utils.setProp("sys.button_backlight.on", "false");
+                    }
+                    break;
+                case Utils.capacitiveBacklightTimeoutString:
+                    if (DEBUG) Log.d(TAG, "Settings for capacitive buttons timeout changed");
+                    capacitiveButtonsTimeoutInt = Integer.parseInt(prefs.getString(Utils.capacitiveBacklightTimeoutString, "1500"));
+                    break;
                 case "buttonsBacklightEnabled":
                     if (DEBUG) Log.d(TAG, "Settings for Capacitive Buttons Backlight changed");
                     buttonsBacklightControl = prefs.getBoolean("buttonsBacklightEnabled", false);
@@ -333,8 +355,20 @@ public class MainService extends AccessibilityService {
         String vibrationIntensityFloat = pref.getString(Utils.vibrationIntensityString, "58");
         Utils.setVibrationIntensity(vibrationIntensityFloat, mContext);
 
+        // Get capacitive buttons backlight timeout
+        capacitiveButtonsTimeoutInt = Integer.parseInt(pref.getString(Utils.capacitiveBacklightTimeoutString, "1500"));
+
         // Check if the capacitive buttons backlight should be controlled
-        buttonsBacklightControl = pref.getBoolean("buttonsBacklightEnabled", false);
+        boolean isCapacitiveBacklightForced = pref.getBoolean("buttonsBacklightEnabledForced", false);
+        if (isCapacitiveBacklightForced) {
+            buttonsBacklightControl = false;
+            buttonsBacklightControlForced = true;
+            Utils.setProp("sys.button_backlight.on", "true");
+        } else {
+            buttonsBacklightControl = pref.getBoolean("buttonsBacklightEnabled", false);
+            buttonsBacklightControlForced = false;
+            Utils.setProp("sys.button_backlight.on", "false");
+        }
 
         // Listen for Navigation Mode changes
         mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor("navigation_mode"),true, mNavigationModeObserver);
@@ -437,6 +471,7 @@ public class MainService extends AccessibilityService {
                     if (DEBUG) Log.d(TAG, "Screen ON");
                     if (Utils.isAlwaysOnDisplayEnabled(mContext))
                         Utils.writeToFile(Utils.dozeWakeupNode, "0", mContext);
+                    if (buttonsBacklightControlForced) Utils.setProp("sys.button_backlight.on", "true");
                     if (isPocketModeEnabled) mPocketModeService.disable();
                     break;
             }
@@ -555,7 +590,7 @@ public class MainService extends AccessibilityService {
                             clickToShutdown = 0;
                             Utils.setProp("sys.button_backlight.on", "false");
                         }
-                    }, 1500);
+                    }, capacitiveButtonsTimeoutInt);
                 }
                 return false;
             case KEYCODE_F4:

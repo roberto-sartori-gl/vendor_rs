@@ -98,6 +98,17 @@ public class SettingsExtraFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
+
+        final Preference capacitiveButtonBacklightTimeout = getPreferenceScreen().findPreference("capacitive_buttons_timeout");
+        capacitiveButtonBacklightTimeout.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference){
+                if (DEBUG) Log.d(TAG, "Selected capacitive buttons Settings");
+                CapacitiveButtonsExtra mCapacitiveButtonsExtra = new CapacitiveButtonsExtra();
+                mCapacitiveButtonsExtra.showCapacitiveButtonsOptions(getActivity());
+                return true;
+            }
+        });
     }
 
 

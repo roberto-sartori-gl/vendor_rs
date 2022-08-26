@@ -59,6 +59,8 @@ public final class Utils {
 
     protected static final String vibrationIntensityString = "vibrationIntensityString";
 
+    protected static final String capacitiveBacklightTimeoutString = "capacitiveButtonsBacklightTimeout";
+
     protected static final String CHEESEBURGER_FP_PROXIMITY_FILE =
             "/sys/devices/soc/soc:fpc_fpc1020/proximity_state";
 

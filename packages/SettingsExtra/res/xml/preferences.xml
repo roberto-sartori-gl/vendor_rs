@@ -160,9 +160,29 @@
 			app:iconSpaceReserved="false" />
 
 		<androidx.preference.SwitchPreferenceCompat
+			android:key="buttonsBacklightEnabledForced"
+			android:disableDependentsState="true"
+			android:title="Keep capacitive buttons backlight always on"
+			android:defaultValue="false"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
+		<androidx.preference.SwitchPreferenceCompat
 			android:key="buttonsBacklightEnabled"
+			app:dependency="buttonsBacklightEnabledForced"
 			android:title="Enable capacitive buttons backlight"
+			app:summary="Enable capacitive buttons backlight when buttons are pressed"
 			android:defaultValue="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:iconSpaceReserved="false" />
+
+		<androidx.preference.Preference
+			app:key="capacitive_buttons_timeout"
+			app:dependency="buttonsBacklightEnabled"
+			app:summary="Set capacitive buttons backlight timeout in ms"
+			app:title="Buttons backlight timeout"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			app:iconSpaceReserved="false" />
