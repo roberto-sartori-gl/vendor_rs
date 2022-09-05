@@ -2,7 +2,6 @@ package org.robertogl.settingsextra;
 
 import android.app.AlarmManager;
 import android.app.NotificationManager;
-import android.app.StatusBarManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.database.ContentObserver;
@@ -295,12 +294,6 @@ public class MainService extends AccessibilityService {
         alarmFilter.addAction("android.app.action.NEXT_ALARM_CLOCK_CHANGED");
         registerReceiver(alarmReceiver, alarmFilter);
 
-        // Register here to get when ringer mode changes
-        // Used to get when vibration setting changes
-        IntentFilter ringerModeFilter = new IntentFilter();
-        ringerModeFilter.addAction(AudioManager.RINGER_MODE_CHANGED_ACTION);
-        registerReceiver(mRingerModeChangeReceiver, ringerModeFilter);
-
         // Enable the Dynamic Modem if the user enabled it
         boolean dynamicModem = pref.getBoolean("dynamicModem", false);
         if (dynamicModem) {
@@ -532,41 +525,6 @@ public class MainService extends AccessibilityService {
                 context.sendBroadcast(intentToSend);
 
                 editor.putLong("currentNextAlarm", nextAlarm).apply();
-            }
-
-            // Android 12 removed the alarm icon from status bar, so add it back
-            // Note that this is called also at boot
-            StatusBarManager mStatusBarManager = (StatusBarManager) context.getSystemService(mContext.STATUS_BAR_SERVICE);
-            int iconId = R.drawable.ic_alarm;
-            if (mNextAlarm != null) {
-                mStatusBarManager.setIcon("alarm_clock_extra", iconId, 0, null);
-                // Actually show the icon
-                mStatusBarManager.setIconVisibility("alarm_clock_extra", true);
-            } else {
-                mStatusBarManager.setIconVisibility("alarm_clock_extra", false);
-                mStatusBarManager.removeIcon("alarm_clock_extra");
-            }
-        }
-    };
-
-    // Android 12 removed the vibration icon from status bar, so add it back
-    // Note that this is called also at boot
-    private BroadcastReceiver mRingerModeChangeReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(AudioManager.RINGER_MODE_CHANGED_ACTION)) {
-                StatusBarManager mStatusBarManager = (StatusBarManager) context.getSystemService(mContext.STATUS_BAR_SERVICE);
-                int iconId = R.drawable.ic_volume_ringer_vibrate;
-                int ringerMode = intent.getIntExtra(AudioManager.EXTRA_RINGER_MODE, -1);
-                if (ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
-                    mStatusBarManager.setIcon("volume_extra", iconId, 0, null);
-                    // Actually show the icon
-                    mStatusBarManager.setIconVisibility("volume_extra", true);
-                } else {
-                    mStatusBarManager.setIconVisibility("volume_extra", false);
-                    mStatusBarManager.removeIcon("volume_extra");
-                }
             }
         }
     };
