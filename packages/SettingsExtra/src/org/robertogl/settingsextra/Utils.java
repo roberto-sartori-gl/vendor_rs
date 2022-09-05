@@ -156,6 +156,20 @@ public final class Utils {
                 "double_tap_to_wake", 0) != 0;
     }
 
+    protected static void addWantedStatusBarIconIfMissing(Context context, String wantedIcon) {
+        String currentBlackList = "";
+        currentBlackList = Settings.Secure.getString(context.getContentResolver(), "icon_blacklist");
+        if (currentBlackList == null) {
+            if (DEBUG) Log.d(TAG, "currentBlackList is null, exiting");
+            return;
+        }
+        if (currentBlackList.contains(wantedIcon)) {
+            if (DEBUG) Log.d(TAG, "currentBlackList contains our wanted icon, removing it");
+            Settings.Secure.putString(context.getContentResolver(), "icon_blacklist", currentBlackList.replace(wantedIcon,""));
+            return;
+        }
+    }
+
     protected static void removeUnwantendStatusBarIcon(Context context, String unWantedIcon) {
         String currentBlackList = "";
         currentBlackList = Settings.Secure.getString(context.getContentResolver(), "icon_blacklist");
