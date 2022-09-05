@@ -1,9 +1,13 @@
 package org.robertogl.settingsextra;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -52,5 +56,18 @@ public class UserBootCompletedReceiver extends BroadcastReceiver {
 
         // Remove rotate icon: we don't need it
         Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "rotate");
+
+        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(context.getPackageName() + "_preferences", MODE_PRIVATE);
+
+        boolean addedBackIcons = pref.getBoolean("addedBackIcon", false);
+
+        if (!addedBackIcons) {
+                Log.d(TAG, "Adding back status bar icons");
+		Editor editor = pref.edit();
+                editor.putBoolean("addedBackIcon", true);
+                editor.commit();
+                Utils.addWantedStatusBarIconIfMissing(deviceProtectedContext, "volume");
+                Utils.addWantedStatusBarIconIfMissing(deviceProtectedContext, "alarm_clock");
+        }
     }
 }
