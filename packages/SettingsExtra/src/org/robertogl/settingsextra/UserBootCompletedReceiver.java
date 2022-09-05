@@ -54,8 +54,9 @@ public class UserBootCompletedReceiver extends BroadcastReceiver {
         };
         gamingTileHandler.post(gamingTileRunnable);
 
-        // Remove rotate icon: we don't need it
+        // Remove rotate and bluetooth icons: we don't need them
         Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "rotate");
+        Utils.removeUnwantendStatusBarIcon(deviceProtectedContext, "bluetooth");
 
         SharedPreferences pref = deviceProtectedContext.getSharedPreferences(context.getPackageName() + "_preferences", MODE_PRIVATE);
 
