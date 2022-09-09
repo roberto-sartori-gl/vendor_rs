@@ -228,6 +228,24 @@ public class DefaultPermissionGrantPolicyExtra {
         } else if (!is_package_installed){
             editor.putBoolean(packageName + "_processed", false).apply();
         }
+
+        // Contacts
+        packageName = "com.android.contacts";
+        permissions_already_allowed = pref.getBoolean(packageName + "_processed", false);
+        is_package_installed = isPackageInstalled(mPackageManager, packageName);
+        if (is_package_installed && !permissions_already_allowed) {
+            if (DEBUG)
+                Log.d(TAG, "DefaultPermissionGrantPolicyExtra for Contacts...");
+
+            for (String mPermission : STORAGE_PERMISSIONS) {
+                mGrantRuntimePermission(packageName, mPermission, mUserHandle, mPackageManager);
+            }
+
+            editor.putBoolean(packageName + "_processed", true).apply();
+        } else if (!is_package_installed){
+            editor.putBoolean(packageName + "_processed", false).apply();
+        }
+
     }
 
     private boolean isPackageInstalled(PackageManager mPackageManager, String targetPackage){
