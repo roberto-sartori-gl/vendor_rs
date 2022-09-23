@@ -79,5 +79,3 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     persist.wm.enable_remote_keyguard_animation=0
 
 PRODUCT_BROKEN_VERIFY_USES_LIBRARIES := true
-
-NEED_AIDL_NDK_PLATFORM_BACKEND  := true
