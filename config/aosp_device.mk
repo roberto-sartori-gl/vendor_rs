@@ -57,6 +57,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     Launcher3Overlay
 
+# Animation when charging from powered off
+PRODUCT_PACKAGES += \
+    lineage_charger_animation
+
 PRODUCT_ENFORCE_RRO_TARGETS := framework-res
 
 PRODUCT_VENDOR_KERNEL_HEADERS := vendor/rs/kernel-headers
