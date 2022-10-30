@@ -27,6 +27,7 @@ LOCAL_STATIC_ANDROID_LIBRARIES := \
     androidx.preference_preference \
 
 LOCAL_OVERRIDES_PACKAGES := \
+    Camera2 \
     OnePlusDoze \
     OnePlusPocketMode \
     uceShimService \
