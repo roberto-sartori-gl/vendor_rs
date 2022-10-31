@@ -29,10 +29,7 @@ LOCAL_STATIC_ANDROID_LIBRARIES := \
 LOCAL_OVERRIDES_PACKAGES := \
     Camera2 \
     OnePlusDoze \
-    OnePlusPocketMode \
     uceShimService \
-    vendor.lineage.livedisplay@2.0-service.oneplus_msm8998 \
-    vendor.lineage.touch@1.0-service.oneplus_msm8998 \
     vendor.qti.hardware.vibrator.service
 
 LOCAL_PACKAGE_NAME := SettingsExtra
