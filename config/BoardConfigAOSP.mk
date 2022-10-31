@@ -32,20 +32,8 @@ PRODUCT_COPY_FILES += \
 include device/lineage/sepolicy/common/sepolicy.mk
 BOARD_SEPOLICY_DIRS += vendor/rs/sepolicy
 
-SKIP_BOOT_JARS_CHECK := true
-
 # Explicitly disable AVB
 BOARD_AVB_ENABLE := false
-
-# Used to avoid getting errors for stuff we are not actually building
-# Remove when and if possible
-ALLOW_MISSING_DEPENDENCIES := true
-
-# Allow include prebuilt binaries as on A11
-BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
-
-# Allow building with broken sysprop SELinux policies
-BUILD_BROKEN_ENFORCE_SYSPROP_OWNER := true
 
 # Recovery
 TARGET_RECOVERY_UI_LIB := librecovery_ui_custom
