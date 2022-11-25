@@ -7,7 +7,7 @@ allow system_app sysfs_vibrator:file { getattr open write };
 
 allow system_app qemu_hw_prop:file { getattr open read };
 
-allow system_app sysfs_fpc_proximity:file { open getattr write };
+allow system_app sysfs_proximity:file { open getattr write };
 
 allow system_app sysfs_fpc_key:file { rw_file_perms };
 allow system_app sysfs_fpc_screen:file { rw_file_perms };
