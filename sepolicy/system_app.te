@@ -9,8 +9,5 @@ allow system_app qemu_hw_prop:file { getattr open read };
 
 allow system_app sysfs_proximity:file { open getattr write };
 
-allow system_app sysfs_fpc_key:file { rw_file_perms };
-allow system_app sysfs_fpc_screen:file { rw_file_perms };
-
 allow system_app proc_touchpanel:dir { search };
 allow system_app proc_touchpanel:file { rw_file_perms };
