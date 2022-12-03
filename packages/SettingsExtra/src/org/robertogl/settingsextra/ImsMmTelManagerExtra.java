@@ -23,6 +23,8 @@ import android.telephony.ims.stub.ImsRegistrationImplBase;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import java.lang.Thread;
+
 public class ImsMmTelManagerExtra {
 
     private final static String TAG = "ImsMmTelManagerExtra";
@@ -64,6 +66,8 @@ public class ImsMmTelManagerExtra {
     private boolean userWantsVolteIcon = false;
 
     private boolean userWantsVowifiIcon = false;
+
+    private boolean isFirstCheck = true;
 
     protected void notifyUserSettingChange() {
         if (DEBUG) Log.d(TAG, "User has change some settings");
@@ -195,6 +199,14 @@ public class ImsMmTelManagerExtra {
 
     // We only care about this: is Volte actually available?
     private boolean isVolteAvailable() {
+        if (isFirstCheck) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            isFirstCheck = false;
+        };
         try {
             checkCurrentSituation();
         } catch (RuntimeException e) {
@@ -205,11 +217,19 @@ public class ImsMmTelManagerExtra {
             Log.d(TAG, "Status on " + mSubId + ": volte switch: " + isVolteSwitchOn() + ", voice capable: "
                     + volteVoiceCapable + ", video capable: " + volteVideoCapable + ", imsRegistered: " + imsRegistered + ", connection state: " + connectionState + ", network type:" + mNetworkType);
         return isVolteSwitchOn() && (volteVoiceCapable || volteVideoCapable) && imsRegistered
-                && (mNetworkType == TelephonyManager.NETWORK_TYPE_LTE || mNetworkType == TelephonyManager.NETWORK_TYPE_LTE_CA) && connectionState == TelephonyManager.DATA_CONNECTED;
+		&& connectionState == TelephonyManager.DATA_CONNECTED;
     }
 
     // Well, we also care about this: is VoWifi actually available?
     private boolean isVowifiAvailable() {
+        if (isFirstCheck) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            isFirstCheck = false;
+        };
         try {
             checkCurrentSituation();
         } catch (RuntimeException e) {
@@ -219,8 +239,7 @@ public class ImsMmTelManagerExtra {
         if (DEBUG)
             Log.d(TAG, "Status on " + mSubId + ": vowifi switch: " + isVoWifiSwitchOn() + ", voice capable: "
                     + vowifiVoiceCapable + ", video capable: " + vowifiVideoCapable + ", imsRegistered: " + imsRegistered + ", connection state: " + connectionState + ", network type:" + mNetworkType);
-        return isVoWifiSwitchOn() && (vowifiVoiceCapable || vowifiVideoCapable) && imsRegistered
-                && mNetworkType == TelephonyManager.NETWORK_TYPE_IWLAN && connectionState == TelephonyManager.DATA_CONNECTED;
+        return isVoWifiSwitchOn() && (vowifiVoiceCapable || vowifiVideoCapable) && imsRegistered;
     }
 
     private final SubscriptionManager.OnSubscriptionsChangedListener mSubscriptionsChangedListener = new SubscriptionManager.OnSubscriptionsChangedListener() {
