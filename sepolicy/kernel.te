@@ -1,0 +1,2 @@
+# for diag over socket
+allow kernel self:socket create;
