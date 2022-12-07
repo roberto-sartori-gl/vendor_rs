@@ -10,7 +10,8 @@ PRODUCT_PACKAGES += \
 # Theme picker
 PRODUCT_PACKAGES += \
     ThemePicker \
-    ThemeStub
+    ThemeStub \
+    ThemesStub
 
 PRODUCT_PACKAGES += \
     messaging
