@@ -1,7 +1,7 @@
 pathmap_PROJ := \
     qcom-audio:hardware/qcom-caf/msm8998/audio \
     qcom-media:hardware/qcom-caf/msm8998/media \
-    qcom-wlan:hardware/qcom/wlan \
+    qcom-wlan:hardware/qcom/wlan/legacy \
     qcom-display:hardware/qcom-caf/msm8998/display \
     qcom-bt-vendor:hardware/qcom-caf/bt \
     qcom-data-ipa-cfg-mgr:vendor/qcom/opensource/data-ipa-cfg-mgr \
