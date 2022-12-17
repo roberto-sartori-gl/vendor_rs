@@ -28,6 +28,13 @@ $(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY): $(BUILT_TARGET_FILES_PACKAGE) $(OTA_
 	$(hide) $(ADD_IMG_TO_TARGET_FILES) -a $(BUILT_TARGET_FILES_PACKAGE)
 	$(hide) unzip -o -j $(BUILT_TARGET_FILES_PACKAGE) -d $(target_files_zip_root)/IMAGES 'IMAGES/*'
 	$(call build-ota-package-target,$@,-k $(KEY_CERT_PAIR) --output_metadata_path $(INTERNAL_OTA_METADATA_NO_RECOVERY))
+	$(hide) mkdir -p $(target_files_zip_root)/OTA_TMP
+	$(hide) unzip -o $@ -d $(target_files_zip_root)/OTA_TMP 'META-INF/com/google/android/updater-script'
+	$(hide) sed -i 1d $(target_files_zip_root)/OTA_TMP/META-INF/com/google/android/updater-script
+	$(hide) mv $@ $(target_files_zip_root)/OTA_TMP/tmp.zip
+	$(hide) cd $(target_files_zip_root)/OTA_TMP && zip -q -u -r tmp.zip 'META-INF/com/google/android/updater-script'
+	$(hide) java -jar -Djava.library.path="out/host/linux-x86/lib64" $(HOST_OUT_EXECUTABLES)/../framework/signapk.jar -w vendor/rs/config/security/releasekey.x509.pem vendor/rs/config/security/releasekey.pk8 $(target_files_zip_root)/OTA_TMP/tmp.zip $@
+	$(hide) rm -rf $(target_files_zip_root)/OTA_TMP
 
 .PHONY: otapackage_norecovery
 otapackage_norecovery: $(INTERNAL_OTA_PACKAGE_TARGET_NO_RECOVERY)
