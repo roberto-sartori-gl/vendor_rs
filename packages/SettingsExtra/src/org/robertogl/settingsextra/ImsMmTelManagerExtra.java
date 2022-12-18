@@ -33,6 +33,8 @@ public class ImsMmTelManagerExtra {
 
     private Context mContext;
 
+    private Context deviceProtectedContext;
+
     private ImsMmTelManager mImsMmTelManager;
 
     private boolean imsRegistered = false;
@@ -67,16 +69,21 @@ public class ImsMmTelManagerExtra {
 
     private boolean userWantsVowifiIcon = false;
 
-    private boolean isFirstCheck = true;
+    private Handler mHandlerCheck;
+
+    private boolean volteConfirmationCheckNeeded = true;
+
+    private boolean vowifiConfirmationCheckNeeded = true;
+
+    private static int showVolteIconTimeoutInt = 5000;
+
+    private static int showVowifiIconTimeoutInt = 5000;
 
     protected void notifyUserSettingChange() {
         if (DEBUG) Log.d(TAG, "User has change some settings");
-        // Before showing anything, check the user will
-        Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
-        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
-        userWantsVolteIcon = pref.getBoolean("showVolteIcon", false);
-        userWantsVowifiIcon = pref.getBoolean("showVowifiIcon", false);
-        // Now check if we should show the icons
+        // Check if we should show the icons
+        volteConfirmationCheckNeeded = true;
+        vowifiConfirmationCheckNeeded = true;
         showVolteIcon(isVolteAvailable());
         showVoWifiIcon(isVowifiAvailable());
     }
@@ -95,6 +102,8 @@ public class ImsMmTelManagerExtra {
 
         mReceiverHandler = new Handler(Looper.myLooper());
 
+        mHandlerCheck = new Handler(Looper.myLooper());
+
         mPhoneStateListener = new PhoneStateListener() {
             @Override
             public void onDataConnectionStateChanged(int state, int networkType) {
@@ -105,6 +114,8 @@ public class ImsMmTelManagerExtra {
                 }
                 connectionState = state;
                 mNetworkType = networkType;
+                volteConfirmationCheckNeeded = true;
+                vowifiConfirmationCheckNeeded = true;
                 showVolteIcon(isVolteAvailable());
                 showVoWifiIcon(isVowifiAvailable());
             }
@@ -118,12 +129,11 @@ public class ImsMmTelManagerExtra {
         mImsMmTelManager = mImsManager.getImsMmTelManager(mSubId);
 
         // Before showing anything, check the user will
-        Context deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
-        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
-        userWantsVolteIcon = pref.getBoolean("showVolteIcon", false);
-        userWantsVowifiIcon = pref.getBoolean("showVowifiIcon", false);
+        deviceProtectedContext = mContext.createDeviceProtectedStorageContext();
 
         // Check if Volte or vowifi already enabled
+        volteConfirmationCheckNeeded = true;
+        vowifiConfirmationCheckNeeded = true;
         showVolteIcon(isVolteAvailable());
         showVoWifiIcon(isVowifiAvailable());
 
@@ -135,12 +145,15 @@ public class ImsMmTelManagerExtra {
         if (DEBUG) Log.d(TAG, "Service is being shutdown on mSubId: " + mSubId);
         // Set the service as stopped
         isRunning = false;
+        volteConfirmationCheckNeeded = false;
+        vowifiConfirmationCheckNeeded = false;
         showVolteIcon(false);
         showVoWifiIcon(false);
         if (!(mImsMmTelManager == null)) {
             unregisterAll();
         }
         mReceiverHandler.removeCallbacksAndMessages(null);
+        mHandlerCheck.removeCallbacksAndMessages(null);
         mContext.getContentResolver().unregisterContentObserver(mObserver);
     }
 
@@ -169,6 +182,8 @@ public class ImsMmTelManagerExtra {
         public void onChange(boolean selfChange) {
             super.onChange(selfChange);
             if (DEBUG) Log.d(TAG, "mObserver on subId: " + mSubId);
+            volteConfirmationCheckNeeded = true;
+            vowifiConfirmationCheckNeeded = true;
             showVolteIcon(isVolteAvailable());
             showVoWifiIcon(isVowifiAvailable());
         }
@@ -199,14 +214,6 @@ public class ImsMmTelManagerExtra {
 
     // We only care about this: is Volte actually available?
     private boolean isVolteAvailable() {
-        if (isFirstCheck) {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            isFirstCheck = false;
-        };
         try {
             checkCurrentSituation();
         } catch (RuntimeException e) {
@@ -221,14 +228,6 @@ public class ImsMmTelManagerExtra {
 
     // Well, we also care about this: is VoWifi actually available?
     private boolean isVowifiAvailable() {
-        if (isFirstCheck) {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            isFirstCheck = false;
-        };
         try {
             checkCurrentSituation();
         } catch (RuntimeException e) {
@@ -296,6 +295,8 @@ public class ImsMmTelManagerExtra {
                 @Override
                 public void onCapabilitiesStatusChanged(MmTelFeature.MmTelCapabilities config) {
                     if (DEBUG) Log.d(TAG, "onCapabilitiesStatusChanged");
+                    volteConfirmationCheckNeeded = true;
+                    vowifiConfirmationCheckNeeded = true;
                     showVolteIcon(isVolteAvailable());
                     showVoWifiIcon(isVowifiAvailable());
                 }
@@ -306,6 +307,8 @@ public class ImsMmTelManagerExtra {
                 @Override
                 public void onRegistered(int imsRadioTech) {
                     if (DEBUG) Log.d(TAG, "onRegistered");
+                    volteConfirmationCheckNeeded = true;
+                    vowifiConfirmationCheckNeeded = true;
                     showVolteIcon(isVolteAvailable());
                     showVoWifiIcon(isVowifiAvailable());
                 }
@@ -313,6 +316,8 @@ public class ImsMmTelManagerExtra {
                 @Override
                 public void onUnregistered(ImsReasonInfo info) {
                     if (DEBUG) Log.d(TAG, "onUnregistered");
+                    volteConfirmationCheckNeeded = true;
+                    vowifiConfirmationCheckNeeded = true;
                     showVolteIcon(isVolteAvailable());
                     showVoWifiIcon(isVowifiAvailable());
                 }
@@ -336,8 +341,19 @@ public class ImsMmTelManagerExtra {
 
     @SuppressLint("WrongConstant")
     private void showVolteIcon(boolean isVolteAvailable) {
+        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+        userWantsVolteIcon = pref.getBoolean("showVolteIcon", false);
+
+        if (volteConfirmationCheckNeeded) {
+            mHandlerCheck.postDelayed(() -> {
+                   volteConfirmationCheckNeeded = false;
+                   showVolteIcon(isVolteAvailable());
+            }, showVolteIconTimeoutInt);
+        }
+
         if (DEBUG)
             Log.d(TAG, "isVolteAvailable: " + isVolteAvailable + ", userWantsVolteIcon: " + userWantsVolteIcon);
+
         boolean show = isVolteAvailable && userWantsVolteIcon;
         String volteIconName = "volte_extra_" + mSubId;
         if (DEBUG) Log.d(TAG, "Volte icon change detected");
@@ -355,8 +371,19 @@ public class ImsMmTelManagerExtra {
 
     @SuppressLint("WrongConstant")
     private void showVoWifiIcon(boolean isVowifiAvailable) {
+        SharedPreferences pref = deviceProtectedContext.getSharedPreferences(mContext.getPackageName() + "_preferences", MODE_PRIVATE);
+        userWantsVowifiIcon = pref.getBoolean("showVowifiIcon", false);
+
+        if (vowifiConfirmationCheckNeeded) {
+            mHandlerCheck.postDelayed(() -> {
+                   vowifiConfirmationCheckNeeded = false;
+                   showVoWifiIcon(isVowifiAvailable());
+            }, showVowifiIconTimeoutInt);
+        }
+
         if (DEBUG)
             Log.d(TAG, "isVowifiAvailable: " + isVowifiAvailable + ", userWantsVowifiIcon: " + userWantsVowifiIcon);
+
         boolean show = isVowifiAvailable && userWantsVowifiIcon;
         String volteIconName = "vowifi_extra_" + mSubId;
         if (DEBUG) Log.d(TAG, "VoWifi icon change detected");
