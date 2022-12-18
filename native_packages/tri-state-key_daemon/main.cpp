@@ -51,20 +51,20 @@ int main()
                 // Silent mode - slider up
                 system("setprop sys.slider_up.vibrate 1");
                 system("service call audio 9 i32 3 i32 -100 i32 0");
-                system("service call audio 35 i32 0 s16 \"shell\"");
+                system("service call audio 36 i32 0 s16 \"shell\"");
             }
             else if (state == 2)
             {
                 // Vibration mode - slider middle
                 system("setprop sys.slider_middle.vibrate 1");
                 system("service call audio 9 i32 3 i32 100 i32 0");
-                system("service call audio 35 i32 1 s16 \"shell\"");
+                system("service call audio 36 i32 1 s16 \"shell\"");
             }
             else if (state == 3)
             {
                 // Normal mode - slider down
                 system("service call audio 9 i32 3 i32 100 i32 0");
-                system("service call audio 35 i32 2 s16 \"shell\"");
+                system("service call audio 36 i32 2 s16 \"shell\"");
             }
         }
         return;
