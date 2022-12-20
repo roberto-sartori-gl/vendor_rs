@@ -70,6 +70,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_DEXPREOPT_SPEED_APPS += \
     SystemUI
 
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+    dalvik.vm.systemuicompilerfilter=speed
+
 PRODUCT_ENFORCE_RRO_TARGETS := framework-res
 
 PRODUCT_VENDOR_KERNEL_HEADERS := vendor/rs/kernel-headers
