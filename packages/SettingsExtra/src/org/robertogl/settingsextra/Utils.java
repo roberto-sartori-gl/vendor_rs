@@ -49,7 +49,11 @@ public final class Utils {
 
     protected static String displayModeDCIP3Node = "/sys/devices/virtual/graphics/fb0/dci_p3";
 
+    protected static String flickerFreeNode = "/proc/flicker_free/flicker_free";
+
     protected static String dozeWakeupNode = "/proc/touchpanel/tp_f4";
+
+    protected static String flickerFreeMinBrightness = "/proc/flicker_free/flicker_free";
 
     protected static String doubleTapToWakeNode = "/proc/touchpanel/double_tap_enable";
 
