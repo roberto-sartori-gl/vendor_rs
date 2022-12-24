@@ -13,6 +13,10 @@ PRODUCT_PACKAGES += \
     ThemeStub \
     ThemesStub
 
+# Theme overlays
+PRODUCT_PACKAGES += \
+    IconShapeCircleOverlay
+
 PRODUCT_PACKAGES += \
     messaging
 
