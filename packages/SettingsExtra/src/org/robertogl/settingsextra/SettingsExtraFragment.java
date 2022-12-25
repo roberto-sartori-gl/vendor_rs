@@ -17,6 +17,9 @@ import androidx.preference.ListPreference;
 import androidx.preference.PreferenceScreen;
 import androidx.preference.PreferenceFragmentCompat;
 
+import android.content.Context;
+import android.content.om.OverlayManager;
+
 import android.util.Log;
 
 public class SettingsExtraFragment extends PreferenceFragmentCompat {
@@ -122,7 +125,18 @@ public class SettingsExtraFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
+
+        final Preference iconRoundShape = getPreferenceScreen().findPreference("iconRoundShape");
+        iconRoundShape.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                Context mContext = getActivity();
+                String key = preference.getKey();
+                if (DEBUG) Log.d(TAG, key);
+                OverlayManager mOverlayManager = (OverlayManager) mContext.getSystemService(Context.OVERLAY_SERVICE);
+                mOverlayManager.setEnabled("com.android.theme.icon.circle", (boolean) newValue, mContext.getUser());
+                return true;
+            }
+        });
     }
-
-
 }
