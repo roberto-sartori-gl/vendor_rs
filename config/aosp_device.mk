@@ -66,10 +66,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     lineage_charger_animation
 
-# LineageOS Aperture
-PRODUCT_PACKAGES += \
-    Aperture
-
 # Dexpreopt
 PRODUCT_DEXPREOPT_SPEED_APPS += \
     SystemUI
