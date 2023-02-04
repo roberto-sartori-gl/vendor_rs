@@ -32,9 +32,6 @@ PRODUCT_COPY_FILES += \
 include device/lineage/sepolicy/common/sepolicy.mk
 BOARD_SEPOLICY_DIRS += vendor/rs/sepolicy
 
-# Explicitly disable AVB
-BOARD_AVB_ENABLE := false
-
 # Recovery
 TARGET_RECOVERY_UI_LIB := librecovery_ui_custom
 
