@@ -70,4 +70,6 @@
     <integer-array name="config_availableColorModes">
         <item>0</item>
     </integer-array>
+
+    <string name="config_displayLightSensorType">android.sensor.light</string>
 </resources>
